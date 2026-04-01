@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Clinic — Pacientes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-surface-variant":"#5c5f62","surface-variant":"#e1e3e5","on-surface":"#303335","surface-container":"#edeef0","secondary-container":"#ffdad9","background":"#faf9fa","on-tertiary-container":"#5b3654","tertiary-container":"#ecbadf","surface-container-low":"#f3f3f5","on-primary":"#fff7f7","on-primary-container":"#47001f","surface-container-highest":"#e1e3e5","error":"#a73b21","outline":"#787b7d","surface-container-high":"#e7e8ea","primary-container":"#fd6c9c","primary-fixed":"#fd6c9c","outline-variant":"#b0b2b5","secondary":"#775757","primary-dim":"#9c1f52","primary":"#ac2d5e","surface":"#faf9fa","tertiary":"#7a5272","surface-container-lowest":"#ffffff","on-tertiary":"#fff7f9","primary-fixed-dim":"#ec5f8f"
+        },
+        fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #faf9fa; color: #303335; }
+</style>
+</head>
+<body class="font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
+  <div class="flex flex-col h-full py-8 space-y-2">
+    <div class="px-6 mb-8">
+      <h1 class="text-xl font-extrabold text-[#ac2d5e] tracking-tighter">Core Clinic</h1>
+      <p class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-[0.2em] mt-1">Gestão Médica</p>
+    </div>
+    <nav class="flex-1 space-y-1 pr-4">
+      <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="dashboard.html">
+        <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
+      </a>
+      <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="agenda.html">
+        <span class="material-symbols-outlined text-xl">calendar_today</span> Agenda
+      </a>
+      <a class="flex items-center gap-3 px-6 py-4 bg-white text-[#ac2d5e] font-bold rounded-r-full shadow-sm transition-all" href="pacientes.html">
+        <span class="material-symbols-outlined text-xl">group</span> Pacientes
+      </a>
+      <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="procedimentos.html">
+        <span class="material-symbols-outlined text-xl">medical_services</span> Procedimentos
+      </a>
+    </nav>
+    <div class="mt-auto pt-4 flex flex-col gap-1 pr-4">
+      <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="#">
+        <span class="material-symbols-outlined text-xl">help</span> Suporte
+      </a>
+      <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200 cursor-pointer" href="#" data-action="logout">
+        <span class="material-symbols-outlined text-xl">logout</span> Sair
+      </a>
+    </div>
+  </div>
+</aside>
+
+<main class="ml-64 min-h-screen flex flex-col">
+  <header class="sticky top-0 z-40 bg-white flex justify-between items-center w-full px-8 py-4">
+    <div class="flex items-center gap-4">
+      <span class="text-xl font-bold text-[#ac2d5e] font-['Manrope'] tracking-tight">Portal Médico</span>
+    </div>
+    <div class="flex items-center gap-6">
+      <button class="p-2 rounded-full hover:bg-[#f3f3f5] transition-colors relative">
+        <span class="material-symbols-outlined text-on-surface">notifications</span>
+        <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+      </button>
+      <div class="flex items-center gap-3 pl-4 border-l border-outline-variant/20">
+        <div class="text-right">
+          <p class="text-sm font-bold text-on-surface leading-none" id="user-email">Carregando...</p>
+          <p class="text-xs text-on-surface-variant opacity-70">Administrador</p>
+        </div>
+        <div class="h-9 w-9 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-xs" id="user-initials">--</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="px-8 py-8 max-w-7xl w-full mx-auto flex-1">
+    <section class="mb-10">
+      <h2 class="text-4xl font-extrabold text-on-surface mb-6 tracking-tight">Pacientes</h2>
+      <div class="relative max-w-2xl">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+        <input id="search-input" class="w-full pl-12 pr-6 py-4 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline-variant" placeholder="Buscar paciente por nome, CPF ou prontuário..." type="text"/>
+      </div>
+    </section>
+
+    <section class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_12px_32px_rgba(48,51,53,0.04)] mb-12">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low/50">
+            <th class="px-8 py-5 text-xs font-semibold uppercase tracking-widest text-on-surface-variant/80">Nome do Paciente</th>
+            <th class="px-8 py-5 text-xs font-semibold uppercase tracking-widest text-on-surface-variant/80">Última Visita</th>
+            <th class="px-8 py-5 text-xs font-semibold uppercase tracking-widest text-on-surface-variant/80">Último Procedimento</th>
+            <th class="px-8 py-5 text-xs font-semibold uppercase tracking-widest text-on-surface-variant/80 text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-container-low" id="pacientes-tbody">
+          <tr>
+            <td colspan="4" class="px-8 py-16 text-center">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-surface-container animate-pulse"></div>
+                <div class="h-3 w-48 bg-surface-container rounded animate-pulse"></div>
+                <div class="h-2 w-32 bg-surface-container rounded animate-pulse"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="px-8 py-4 bg-surface-container-low/20 flex justify-between items-center text-sm text-on-surface-variant">
+        <p id="pagina-info">Carregando...</p>
+        <div class="flex gap-2">
+          <button class="px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors font-medium">Anterior</button>
+          <button class="px-4 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors font-medium">Próximo</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-auto">
+      <div class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-primary shadow-sm">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/70">Novos Pacientes</p>
+          <span class="material-symbols-outlined text-primary bg-primary-fixed/20 p-2 rounded-lg">person_add</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-3xl font-extrabold text-on-surface tabular-nums opacity-50 animate-pulse" id="stat-novos">—</h3>
+          <span class="text-emerald-600 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-sm">trending_up</span></span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">Este mês até agora</p>
+      </div>
+      <div class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-tertiary shadow-sm">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/70">Total de Pacientes</p>
+          <span class="material-symbols-outlined text-tertiary bg-tertiary-container/40 p-2 rounded-lg">group</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-3xl font-extrabold text-on-surface tabular-nums opacity-50 animate-pulse" id="stat-total">—</h3>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">Base total cadastrada</p>
+      </div>
+      <div class="bg-surface-container-lowest p-6 rounded-xl border-l-4 border-outline-variant shadow-sm hidden lg:block">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/70">Ticket Médio</p>
+          <span class="material-symbols-outlined text-on-surface-variant bg-surface-container-low p-2 rounded-lg">payments</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <h3 class="text-3xl font-extrabold text-on-surface tabular-nums">—</h3>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">Média por paciente</p>
+      </div>
+    </section>
+  </div>
+
+  <footer class="mt-12 py-8 px-8 text-center text-xs text-on-surface-variant/50 border-t border-surface-container">
+    <p>© 2024 Core Clinic - Gestão Premium de Saúde &amp; Estética</p>
+  </footer>
+</main>
+
+<button id="btn-novo-paciente" onclick="openPacienteModal()" class="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center z-50">
+  <span class="material-symbols-outlined text-3xl">add</span>
+</button>
+
+<!-- ── Modal Paciente ────────────────────────────────────────── -->
+<div id="modal-paciente" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
+  <!-- Overlay -->
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closePacienteModal()"></div>
+  <!-- Panel -->
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8 z-10">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h3 class="font-headline text-2xl font-bold text-on-surface" id="modal-titulo">Novo Paciente</h3>
+        <p class="text-xs text-on-surface-variant mt-1">Preencha os dados do paciente</p>
+      </div>
+      <button onclick="closePacienteModal()" class="p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <form id="form-paciente" class="space-y-5" novalidate>
+      <input type="hidden" id="paciente-edit-id"/>
+
+      <!-- Nome -->
+      <div>
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Nome completo *</label>
+        <input id="f-nome" type="text" required placeholder="Ex: Maria Silva"
+          class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+      </div>
+
+      <!-- Telefone + Email -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Telefone</label>
+          <input id="f-telefone" type="tel" placeholder="(11) 99999-9999"
+            class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">E-mail</label>
+          <input id="f-email" type="email" placeholder="maria@email.com"
+            class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+      </div>
+
+      <!-- CPF + Nascimento -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">CPF</label>
+          <input id="f-cpf" type="text" placeholder="000.000.000-00"
+            class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Nascimento</label>
+          <input id="f-nascimento" type="date"
+            class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+      </div>
+
+      <!-- Observações -->
+      <div>
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Observações</label>
+        <textarea id="f-obs" rows="2" placeholder="Alergias, observações clínicas..."
+          class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
+      </div>
+
+      <!-- Erro -->
+      <p id="modal-erro" class="text-xs text-error hidden"></p>
+
+      <!-- Ações -->
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="btn-deletar" onclick="deletarPaciente()" class="px-5 py-3 rounded-full text-error text-sm font-semibold hover:bg-rose-50 transition-colors hidden">
+          Excluir
+        </button>
+        <button type="button" onclick="closePacienteModal()" class="flex-1 py-3 rounded-full bg-surface-container text-on-surface text-sm font-semibold hover:bg-surface-container-high transition-colors">
+          Cancelar
+        </button>
+        <button type="submit" id="btn-salvar" class="flex-1 py-3 rounded-full bg-gradient-to-r from-primary to-primary-dim text-white text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">
+          Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadPacientes(session) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    const [
+      { data: pacientes, count: total },
+      { count: novosMes }
+    ] = await Promise.all([
+      _supabase.from('pacientes').select('id, nome, telefone, email, created_at', { count: 'exact' }).order('created_at', { ascending: false }),
+      _supabase.from('pacientes').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth)
+    ]);
+
+    // Also get last appointment per patient from agendamentos
+    const { data: ultimosAgendamentos } = await _supabase
+      .from('agendamentos')
+      .select('paciente_id, procedimento_nome, inicio')
+      .not('paciente_id', 'is', null)
+      .order('inicio', { ascending: false });
+
+    // Build map paciente_id -> last appointment
+    const lastAppt = {};
+    (ultimosAgendamentos || []).forEach(a => {
+      if (!lastAppt[a.paciente_id]) lastAppt[a.paciente_id] = a;
+    });
+
+    // Update stats
+    document.getElementById('stat-novos').classList.remove('opacity-50', 'animate-pulse');
+    document.getElementById('stat-total').classList.remove('opacity-50', 'animate-pulse');
+    document.getElementById('stat-novos').textContent = novosMes ?? 0;
+    document.getElementById('stat-total').textContent = total ?? 0;
+
+    // Render table
+    const tbody = document.getElementById('pacientes-tbody');
+    const paginaInfo = document.getElementById('pagina-info');
+
+    if (!pacientes || pacientes.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="px-8 py-16 text-center text-on-surface-variant">
+            <span class="material-symbols-outlined text-4xl block mb-2 opacity-30">group</span>
+            <p class="font-medium">Nenhum paciente cadastrado ainda.</p>
+            <p class="text-xs mt-1">Clique no botão + para adicionar o primeiro paciente.</p>
+          </td>
+        </tr>`;
+      paginaInfo.textContent = '0 pacientes';
+    } else {
+      tbody.innerHTML = pacientes.map(p => {
+        const initials = p.nome.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase();
+        const last = lastAppt[p.id];
+        const lastDate = last ? new Date(last.inicio).toLocaleDateString('pt-BR') : '—';
+        const lastProc = last ? last.procedimento_nome : '—';
+        return `
+          <tr class="group hover:bg-surface-container-low/30 transition-colors cursor-pointer" onclick="window.location.href='paciente.html?id=${p.id}'">
+            <td class="px-8 py-6">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold text-sm">${initials}</div>
+                <div>
+                  <p class="font-bold text-on-surface">${p.nome}</p>
+                  <p class="text-xs text-on-surface-variant">${p.telefone || p.email || '—'}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-8 py-6 text-sm text-on-surface-variant tabular-nums">${lastDate}</td>
+            <td class="px-8 py-6">
+              ${lastProc !== '—' ? `<span class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-xs font-medium">${lastProc}</span>` : '<span class="text-xs text-on-surface-variant">—</span>'}
+            </td>
+            <td class="px-8 py-6 text-right">
+              <button onclick="event.stopPropagation(); editarPaciente('${p.id}')" class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-primary" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+              <button onclick="event.stopPropagation(); window.location.href='paciente.html?id=${p.id}'" class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant" title="Ver perfil"><span class="material-symbols-outlined">open_in_new</span></button>
+            </td>
+          </tr>`;
+      }).join('');
+      paginaInfo.textContent = `Exibindo ${pacientes.length} de ${total} pacientes`;
+    }
+
+    // Search
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('#pacientes-tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('user-email').textContent = session.user.email;
+    document.getElementById('user-initials').textContent = session.user.email.substring(0,2).toUpperCase();
+  }
+
+  (async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    await loadPacientes(session);
+  })();
+
+  document.querySelectorAll('[data-action="logout"]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await _supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+  });
+
+  // ── Modal Paciente ─────────────────────────────────────────
+  function openPacienteModal(paciente = null) {
+    document.getElementById('form-paciente').reset();
+    document.getElementById('modal-erro').classList.add('hidden');
+    document.getElementById('paciente-edit-id').value = '';
+
+    if (paciente) {
+      document.getElementById('modal-titulo').textContent = 'Editar Paciente';
+      document.getElementById('paciente-edit-id').value = paciente.id;
+      document.getElementById('f-nome').value       = paciente.nome || '';
+      document.getElementById('f-telefone').value   = paciente.telefone || '';
+      document.getElementById('f-email').value      = paciente.email || '';
+      document.getElementById('f-cpf').value        = paciente.cpf || '';
+      document.getElementById('f-nascimento').value = paciente.data_nascimento || '';
+      document.getElementById('f-obs').value        = paciente.observacoes || '';
+      document.getElementById('btn-deletar').classList.remove('hidden');
+    } else {
+      document.getElementById('modal-titulo').textContent = 'Novo Paciente';
+      document.getElementById('btn-deletar').classList.add('hidden');
+    }
+
+    document.getElementById('modal-paciente').classList.remove('hidden');
+    document.getElementById('f-nome').focus();
+  }
+
+  function closePacienteModal() {
+    document.getElementById('modal-paciente').classList.add('hidden');
+  }
+
+  // Abrir modal de edição pelo botão da linha
+  window.editarPaciente = async function(id) {
+    const { data } = await _supabase.from('pacientes').select('*').eq('id', id).single();
+    if (data) openPacienteModal(data);
+  };
+
+  // Deletar paciente
+  window.deletarPaciente = async function() {
+    const id = document.getElementById('paciente-edit-id').value;
+    if (!id) return;
+    if (!confirm('Tem certeza que deseja excluir este paciente? Esta ação não pode ser desfeita.')) return;
+
+    const { error } = await _supabase.from('pacientes').delete().eq('id', id);
+    if (error) {
+      document.getElementById('modal-erro').textContent = 'Erro ao excluir: ' + error.message;
+      document.getElementById('modal-erro').classList.remove('hidden');
+      return;
+    }
+    closePacienteModal();
+    const { data: { session } } = await _supabase.auth.getSession();
+    await loadPacientes(session);
+  };
+
+  // Submit do form
+  document.getElementById('form-paciente').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-salvar');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    const id    = document.getElementById('paciente-edit-id').value;
+    const nome  = document.getElementById('f-nome').value.trim();
+    const erro  = document.getElementById('modal-erro');
+
+    if (!nome) {
+      erro.textContent = 'Nome é obrigatório.';
+      erro.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Salvar';
+      return;
+    }
+
+    const payload = {
+      nome,
+      telefone:        document.getElementById('f-telefone').value.trim() || null,
+      email:           document.getElementById('f-email').value.trim()    || null,
+      cpf:             document.getElementById('f-cpf').value.trim()      || null,
+      data_nascimento: document.getElementById('f-nascimento').value      || null,
+      observacoes:     document.getElementById('f-obs').value.trim()      || null,
+    };
+
+    let error;
+    if (id) {
+      ({ error } = await _supabase.from('pacientes').update(payload).eq('id', id));
+    } else {
+      ({ error } = await _supabase.from('pacientes').insert(payload));
+    }
+
+    btn.disabled = false; btn.textContent = 'Salvar';
+
+    if (error) {
+      const msg = error.code === '23505' ? 'CPF já cadastrado.' : error.message;
+      erro.textContent = msg;
+      erro.classList.remove('hidden');
+      return;
+    }
+
+    closePacienteModal();
+    const { data: { session } } = await _supabase.auth.getSession();
+    await loadPacientes(session);
+  });
+</script>
+</body>
+</html>

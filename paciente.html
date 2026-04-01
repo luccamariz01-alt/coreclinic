@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Clinic — Detalhes do Paciente</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-surface":"#303335","surface-container-low":"#f3f3f5","primary-container":"#fd6c9c","on-secondary":"#fff7f6","surface":"#faf9fa","primary-fixed":"#fd6c9c","surface-tint":"#ac2d5e","surface-container-high":"#e7e8ea","on-error":"#fff7f6","secondary-dim":"#6a4b4b","primary-fixed-dim":"#ec5f8f","on-secondary-container":"#694a4a","secondary":"#775757","surface-container-lowest":"#ffffff","on-primary-container":"#47001f","secondary-fixed":"#ffdad9","inverse-surface":"#0d0e0f","on-tertiary":"#fff7f9","error":"#a73b21","surface-container":"#edeef0","inverse-on-surface":"#9d9d9e","inverse-primary":"#fd6c9c","surface-dim":"#d8dadd","error-container":"#fd795a","secondary-container":"#ffdad9","primary-dim":"#9c1f52","surface-bright":"#faf9fa","outline":"#787b7d","tertiary":"#7a5272","on-tertiary-container":"#5b3654","tertiary-container":"#ecbadf","on-secondary-fixed-variant":"#735354","outline-variant":"#b0b2b5","on-background":"#303335","primary":"#ac2d5e","tertiary-fixed":"#ecbadf","secondary-fixed-dim":"#f5caca","background":"#faf9fa","surface-container-highest":"#e1e3e5","surface-variant":"#e1e3e5","on-surface-variant":"#5c5f62","on-primary":"#fff7f7"
+        },
+        fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); }
+</style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
+  <div class="px-8 py-8">
+    <h1 class="text-xl font-extrabold text-[#ac2d5e] tracking-tighter">Core Clinic</h1>
+    <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">GESTÃO MÉDICA</p>
+  </div>
+  <nav class="flex flex-col flex-1 space-y-1">
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="dashboard.html">
+      <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="agenda.html">
+      <span class="material-symbols-outlined">calendar_today</span><span>Agenda</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 bg-white text-[#ac2d5e] font-bold rounded-r-full transition-all" href="pacientes.html">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span><span>Pacientes</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="procedimentos.html">
+      <span class="material-symbols-outlined">medical_services</span><span>Procedimentos</span>
+    </a>
+  </nav>
+  <div class="px-6 mt-auto pb-8 space-y-1">
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="#">
+      <span class="material-symbols-outlined">help</span><span>Suporte</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200 cursor-pointer" href="#" data-action="logout">
+      <span class="material-symbols-outlined">logout</span><span>Sair</span>
+    </a>
+  </div>
+</aside>
+
+<header class="fixed top-0 right-0 w-full z-40 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 h-16 ml-64 shadow-sm shadow-pink-100/20">
+  <div class="flex items-center gap-4 flex-1 ml-64">
+    <span class="material-symbols-outlined text-slate-400">search</span>
+    <input class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Buscar paciente..." type="text"/>
+  </div>
+  <div class="flex items-center gap-6">
+    <button class="text-slate-500 hover:text-pink-500 transition-colors">
+      <span class="material-symbols-outlined">notifications</span>
+    </button>
+    <button class="text-slate-500 hover:text-pink-500 transition-colors">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+    <div class="h-9 w-9 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-xs" id="user-initials">--</div>
+  </div>
+</header>
+
+<main class="ml-64 pt-24 px-12 pb-12 min-h-screen">
+  <div class="mb-10">
+    <nav class="flex items-center gap-2 text-xs uppercase tracking-widest text-on-surface-variant mb-2">
+      <a href="pacientes.html" class="hover:text-primary transition-colors">Pacientes</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-primary font-bold">Perfil da Paciente</span>
+    </nav>
+    <h2 class="font-headline text-5xl font-extrabold text-on-surface tracking-tight mb-6 opacity-50 animate-pulse" id="paciente-nome-titulo">Carregando...</h2>
+    <div class="flex gap-4">
+      <button id="btn-editar-perfil" onclick="abrirEdicao()" class="px-8 py-2.5 rounded-full bg-surface-container-highest text-on-surface font-semibold text-sm hover:bg-surface-container-high transition-colors border border-outline-variant/20">
+        Editar Perfil
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-6 mb-12">
+    <div class="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10 flex flex-col items-center text-center">
+      <div class="relative mb-6">
+        <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg ring-4 ring-pink-50 bg-primary-container/20 flex items-center justify-center">
+          <span class="text-4xl font-headline font-bold text-primary" id="paciente-nome">—</span>
+        </div>
+        <span class="absolute bottom-1 right-1 bg-green-500 h-5 w-5 rounded-full border-4 border-white"></span>
+      </div>
+      <h3 class="font-headline text-xl font-bold mb-1" id="paciente-nome-card">—</h3>
+      <p class="text-on-surface-variant text-sm mb-6" id="paciente-desde">Carregando...</p>
+      <div class="w-full space-y-3">
+        <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+          <span class="text-xs font-label text-on-surface-variant uppercase tracking-wider">Contato</span>
+          <span class="text-sm font-medium" id="paciente-telefone">—</span>
+        </div>
+        <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+          <span class="text-xs font-label text-on-surface-variant uppercase tracking-wider">Aniversário</span>
+          <span class="text-sm font-medium" id="paciente-aniversario">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-span-12 lg:col-span-8 grid grid-cols-2 gap-6">
+      <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10 flex flex-col justify-between">
+        <div>
+          <div class="h-12 w-12 rounded-xl bg-pink-50 flex items-center justify-center text-primary mb-4"><span class="material-symbols-outlined">spa</span></div>
+          <h4 class="text-on-surface-variant text-xs uppercase tracking-widest font-bold mb-1">Último Procedimento</h4>
+          <p class="font-headline text-2xl font-bold text-on-surface leading-tight" id="ultimo-procedimento">—</p>
+        </div>
+        <div class="flex items-center gap-2 text-on-surface-variant text-sm mt-4">
+          <span class="material-symbols-outlined text-sm">event</span>
+          <span id="ultimo-procedimento-data">—</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10 flex flex-col justify-between">
+        <div>
+          <div class="h-12 w-12 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 mb-4"><span class="material-symbols-outlined">payments</span></div>
+          <h4 class="text-on-surface-variant text-xs uppercase tracking-widest font-bold mb-1">Faturamento Total</h4>
+          <p class="font-headline text-2xl font-bold text-on-surface leading-tight opacity-50 animate-pulse" id="faturamento-total">R$ —</p>
+        </div>
+        <div class="flex items-center gap-2 text-green-600 text-sm mt-4 font-semibold">
+          <span class="material-symbols-outlined text-sm">trending_up</span><span>Histórico completo</span>
+        </div>
+      </div>
+      <div class="col-span-2">
+        <button class="w-full h-32 rounded-xl bg-gradient-to-br from-primary via-primary to-primary-container text-on-primary font-bold shadow-xl shadow-pink-200/50 flex flex-col items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all duration-300 group">
+          <div class="p-3 bg-white/20 rounded-full mb-1 group-hover:scale-110 transition-transform"><span class="material-symbols-outlined text-3xl">add_circle</span></div>
+          <span class="text-xl font-headline tracking-wide uppercase">Novo Agendamento</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="mt-12">
+    <div class="flex items-center justify-between mb-8">
+      <h3 class="font-headline text-2xl font-bold text-on-surface">Histórico de Procedimentos</h3>
+      <div class="flex gap-2">
+        <button class="p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-on-surface-variant">filter_list</span></button>
+        <button class="p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-on-surface-variant">download</span></button>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/10">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low/50">
+            <th class="px-8 py-4 text-xs font-label text-on-surface-variant uppercase tracking-widest">Data</th>
+            <th class="px-8 py-4 text-xs font-label text-on-surface-variant uppercase tracking-widest">Procedimento</th>
+            <th class="px-8 py-4 text-xs font-label text-on-surface-variant uppercase tracking-widest">Observações</th>
+            <th class="px-8 py-4 text-xs font-label text-on-surface-variant uppercase tracking-widest">Status</th>
+            <th class="px-8 py-4 text-xs font-label text-on-surface-variant uppercase tracking-widest text-right">Valor</th>
+            <th class="px-8 py-4"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-container" id="historico-tbody">
+          <tr>
+            <td colspan="6" class="px-8 py-16 text-center">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-surface-container animate-pulse"></div>
+                <div class="h-3 w-48 bg-surface-container rounded animate-pulse"></div>
+                <div class="h-2 w-32 bg-surface-container rounded animate-pulse"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="px-8 py-4 bg-surface-container-low/30 text-center">
+        <button class="text-sm font-bold text-primary hover:underline">Ver Histórico Completo</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadPaciente(session) {
+    const params = new URLSearchParams(window.location.search);
+    const pacienteId = params.get('id');
+
+    if (!pacienteId) {
+      window.location.href = 'pacientes.html';
+      return;
+    }
+
+    const [
+      { data: paciente },
+      { data: historico }
+    ] = await Promise.all([
+      _supabase.from('pacientes').select('*').eq('id', pacienteId).single(),
+      _supabase.from('agendamentos').select('*').eq('paciente_id', pacienteId).order('inicio', { ascending: false })
+    ]);
+
+    if (!paciente) {
+      window.location.href = 'pacientes.html';
+      return;
+    }
+
+    // Remove loading states
+    document.getElementById('paciente-nome-titulo').classList.remove('opacity-50', 'animate-pulse');
+    document.getElementById('faturamento-total').classList.remove('opacity-50', 'animate-pulse');
+
+    // Get initials for avatar
+    const initials = paciente.nome.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase();
+
+    // Update patient info
+    document.getElementById('paciente-nome').textContent = initials;
+    document.getElementById('paciente-nome-titulo').textContent = paciente.nome;
+    document.getElementById('paciente-nome-card').textContent = paciente.nome;
+    document.getElementById('paciente-telefone').textContent = paciente.telefone || '—';
+    document.getElementById('paciente-aniversario').textContent = paciente.data_nascimento
+      ? new Date(paciente.data_nascimento + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '—';
+    document.getElementById('paciente-desde').textContent = 'Desde ' + new Date(paciente.created_at).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+
+    // Last procedure
+    const last = historico?.[0];
+    document.getElementById('ultimo-procedimento').textContent = last?.procedimento_nome || '—';
+    document.getElementById('ultimo-procedimento-data').textContent = last
+      ? new Date(last.inicio).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '—';
+
+    // Total revenue
+    const totalReceita = (historico || []).filter(a => a.valor_cobrado).reduce((s, a) => s + Number(a.valor_cobrado), 0);
+    document.getElementById('faturamento-total').textContent = 'R$ ' + totalReceita.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+    // History table
+    const tbody = document.getElementById('historico-tbody');
+    if (!historico || historico.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="px-8 py-12 text-center text-on-surface-variant"><span class="material-symbols-outlined text-3xl block mb-2 opacity-30">history</span><p>Nenhum procedimento registrado.</p></td></tr>`;
+    } else {
+      tbody.innerHTML = historico.map(a => {
+        const dataInicio = new Date(a.inicio).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+        const dur = a.fim ? Math.round((new Date(a.fim) - new Date(a.inicio)) / 60000) + ' min' : '—';
+        const statusBg = a.status === 'concluido' ? 'bg-tertiary-container text-on-tertiary-container'
+          : a.status === 'cancelado' ? 'bg-rose-50 text-rose-700'
+          : 'bg-surface-container text-on-surface-variant';
+        return `
+          <tr class="hover:bg-surface transition-colors">
+            <td class="px-8 py-6 font-medium text-sm">${dataInicio}</td>
+            <td class="px-8 py-6">
+              <span class="font-semibold text-on-surface block">${a.procedimento_nome || '—'}</span>
+              <span class="text-xs text-on-surface-variant">Duração: ${dur}</span>
+            </td>
+            <td class="px-8 py-6 text-sm">${a.observacoes || '—'}</td>
+            <td class="px-8 py-6"><span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBg}">${a.status}</span></td>
+            <td class="px-8 py-6 text-right font-bold text-primary">${a.valor_cobrado ? 'R$ ' + Number(a.valor_cobrado).toLocaleString('pt-BR', {minimumFractionDigits:2}) : '—'}</td>
+            <td class="px-8 py-6 text-right"><button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button></td>
+          </tr>`;
+      }).join('');
+    }
+
+    document.getElementById('user-initials').textContent = session.user.email.substring(0,2).toUpperCase();
+  }
+
+  (async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    await loadPaciente(session);
+  })();
+
+  document.querySelectorAll('[data-action="logout"]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await _supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+  });
+
+  // ── Editar perfil ──────────────────────────────────────────
+  let _pacienteAtual = null;
+
+  // Sobrescreve loadPaciente para guardar referência do objeto
+  const _origLoad = loadPaciente;
+  window._patchPaciente = function(p) { _pacienteAtual = p; };
+
+  window.abrirEdicao = function() {
+    if (!_pacienteAtual) return;
+    document.getElementById('ep-id').value          = _pacienteAtual.id;
+    document.getElementById('ep-nome').value        = _pacienteAtual.nome || '';
+    document.getElementById('ep-telefone').value    = _pacienteAtual.telefone || '';
+    document.getElementById('ep-email').value       = _pacienteAtual.email || '';
+    document.getElementById('ep-cpf').value         = _pacienteAtual.cpf || '';
+    document.getElementById('ep-nascimento').value  = _pacienteAtual.data_nascimento || '';
+    document.getElementById('ep-obs').value         = _pacienteAtual.observacoes || '';
+    document.getElementById('ep-erro').classList.add('hidden');
+    document.getElementById('modal-editar').classList.remove('hidden');
+  };
+
+  window.fecharEdicao = function() {
+    document.getElementById('modal-editar').classList.add('hidden');
+  };
+
+  document.getElementById('form-editar').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn  = document.getElementById('ep-salvar');
+    const erro = document.getElementById('ep-erro');
+    btn.disabled = true; btn.textContent = 'Salvando...';
+
+    const id   = document.getElementById('ep-id').value;
+    const nome = document.getElementById('ep-nome').value.trim();
+    if (!nome) {
+      erro.textContent = 'Nome é obrigatório.';
+      erro.classList.remove('hidden');
+      btn.disabled = false; btn.textContent = 'Salvar';
+      return;
+    }
+
+    const payload = {
+      nome,
+      telefone:        document.getElementById('ep-telefone').value.trim() || null,
+      email:           document.getElementById('ep-email').value.trim()    || null,
+      cpf:             document.getElementById('ep-cpf').value.trim()      || null,
+      data_nascimento: document.getElementById('ep-nascimento').value      || null,
+      observacoes:     document.getElementById('ep-obs').value.trim()      || null,
+    };
+
+    const { error } = await _supabase.from('pacientes').update(payload).eq('id', id);
+    btn.disabled = false; btn.textContent = 'Salvar';
+
+    if (error) {
+      erro.textContent = error.message;
+      erro.classList.remove('hidden');
+      return;
+    }
+
+    fecharEdicao();
+    const { data: { session } } = await _supabase.auth.getSession();
+    await loadPaciente(session);
+  });
+</script>
+
+<!-- ── Modal Editar Perfil ──────────────────────────────────── -->
+<div id="modal-editar" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="fecharEdicao()"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8 z-10">
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h3 class="font-headline text-2xl font-bold text-on-surface">Editar Perfil</h3>
+        <p class="text-xs text-on-surface-variant mt-1">Atualize os dados do paciente</p>
+      </div>
+      <button onclick="fecharEdicao()" class="p-2 rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="form-editar" class="space-y-5" novalidate>
+      <input type="hidden" id="ep-id"/>
+      <div>
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Nome completo *</label>
+        <input id="ep-nome" type="text" required class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Telefone</label>
+          <input id="ep-telefone" type="tel" class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">E-mail</label>
+          <input id="ep-email" type="email" class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">CPF</label>
+          <input id="ep-cpf" type="text" class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Nascimento</label>
+          <input id="ep-nascimento" type="date" class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all"/>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-1.5">Observações</label>
+        <textarea id="ep-obs" rows="2" class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
+      </div>
+      <p id="ep-erro" class="text-xs text-error hidden"></p>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="fecharEdicao()" class="flex-1 py-3 rounded-full bg-surface-container text-on-surface text-sm font-semibold hover:bg-surface-container-high transition-colors">Cancelar</button>
+        <button type="submit" id="ep-salvar" class="flex-1 py-3 rounded-full bg-gradient-to-r from-primary to-primary-dim text-white text-sm font-bold hover:opacity-90 transition-all disabled:opacity-50">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Clinic — Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "inverse-surface": "#0d0e0f","on-surface-variant": "#5c5f62","surface-variant": "#e1e3e5","on-surface": "#303335","inverse-on-surface": "#9d9d9e","surface-dim": "#d8dadd","on-secondary-container": "#694a4a","surface-container": "#edeef0","inverse-primary": "#fd6c9c","secondary-fixed-dim": "#f5caca","secondary-fixed": "#ffdad9","secondary-container": "#ffdad9","on-tertiary-fixed": "#44223f","on-error": "#fff7f6","error-dim": "#791903","on-background": "#303335","background": "#faf9fa","on-error-container": "#6e1400","on-secondary-fixed": "#543838","tertiary-dim": "#6d4665","on-tertiary-container": "#5b3654","tertiary-container": "#ecbadf","surface-container-low": "#f3f3f5","on-tertiary-fixed-variant": "#643e5d","on-secondary-fixed-variant": "#735354","on-primary": "#fff7f7","on-primary-container": "#47001f","surface-container-highest": "#e1e3e5","error-container": "#fd795a","error": "#a73b21","outline": "#787b7d","surface-container-high": "#e7e8ea","primary-container": "#fd6c9c","tertiary-fixed": "#ecbadf","on-primary-fixed": "#000000","primary-fixed": "#fd6c9c","on-primary-fixed-variant": "#590029","surface-bright": "#faf9fa","secondary-dim": "#6a4b4b","on-secondary": "#fff7f6","tertiary-fixed-dim": "#deadd1","outline-variant": "#b0b2b5","secondary": "#775757","primary-dim": "#9c1f52","primary": "#ac2d5e","brand-soft-pink": "#F4C2C2","surface-tint": "#ac2d5e","surface": "#faf9fa","tertiary": "#7a5272","surface-container-lowest": "#ffffff","on-tertiary": "#fff7f9","primary-fixed-dim": "#ec5f8f"
+        },
+        fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { font-family: 'Inter', sans-serif; background-color: #faf9fa; color: #303335; }
+  .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); }
+  .premium-gradient { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
+  .ambient-bloom { box-shadow: 0px 12px 32px rgba(48,51,53,0.06); }
+</style>
+</head>
+<body class="antialiased overflow-hidden">
+
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] dark:bg-slate-900 font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
+  <div class="px-8 py-8">
+    <h1 class="font-extrabold text-[#ac2d5e] dark:text-[#fd6c9c] tracking-tighter text-lg">Core Clinic</h1>
+    <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Medical Management</p>
+  </div>
+  <nav class="flex flex-col flex-1 space-y-2">
+    <a class="flex items-center gap-3 px-6 py-4 bg-white dark:bg-slate-800 text-[#ac2d5e] dark:text-[#fd6c9c] font-bold rounded-r-full transition-all" href="dashboard.html">
+      <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] dark:text-slate-400 hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="agenda.html">
+      <span class="material-symbols-outlined">calendar_today</span><span>Agenda</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] dark:text-slate-400 hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="pacientes.html">
+      <span class="material-symbols-outlined">group</span><span>Pacientes</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] dark:text-slate-400 hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="procedimentos.html">
+      <span class="material-symbols-outlined">medical_services</span><span>Procedimentos</span>
+    </a>
+  </nav>
+  <div class="px-6 mt-auto pb-8 space-y-2">
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="#">
+      <span class="material-symbols-outlined">help</span><span>Suporte</span>
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200 cursor-pointer" href="#" data-action="logout">
+      <span class="material-symbols-outlined">logout</span><span>Sair</span>
+    </a>
+    <div class="mt-4 flex items-center gap-3 p-3 bg-white dark:bg-slate-800/50 rounded-xl" id="user-info">
+      <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-xs" id="user-initials">--</div>
+      <div class="overflow-hidden">
+        <p class="font-bold text-xs truncate text-on-surface" id="user-email">Carregando...</p>
+        <p class="text-[10px] text-slate-500 truncate">Administrador</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex justify-between items-center px-8 font-['Inter'] text-sm font-medium">
+  <div class="flex items-center gap-4">
+    <span class="text-rose-600 dark:text-rose-400 font-semibold">CoreClinic Dashboard</span>
+  </div>
+  <div class="flex items-center gap-6">
+    <div class="relative flex items-center bg-surface-container-low px-4 py-2 rounded-full w-64">
+      <span class="material-symbols-outlined text-slate-400 text-lg mr-2">search</span>
+      <input class="bg-transparent border-none p-0 text-sm focus:ring-0 placeholder-slate-400 w-full" placeholder="Procurar..." type="text"/>
+    </div>
+    <div class="flex items-center gap-4 text-slate-500">
+      <button class="opacity-80 hover:opacity-100 hover:text-rose-500 transition-opacity">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+      <button class="opacity-80 hover:opacity-100 hover:text-rose-500 transition-opacity">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="ml-64 pt-16 h-screen overflow-y-auto bg-surface">
+  <div class="max-w-[1400px] mx-auto p-12 space-y-12">
+    <section class="flex justify-between items-end">
+      <div>
+        <span class="font-label text-xs uppercase tracking-[0.2em] text-primary font-bold">Relatório Executivo</span>
+        <h2 class="font-headline text-5xl font-extrabold text-on-surface tracking-tight mt-2">Visão Geral</h2>
+      </div>
+      <div class="text-right">
+        <p class="font-label text-sm text-on-surface-variant" id="current-date">Carregando...</p>
+        <p class="text-xs text-primary font-semibold">Status do Sistema: Operacional</p>
+      </div>
+    </section>
+
+    <div class="flex items-center gap-2 mb-8 bg-surface-container-low p-1 rounded-full w-fit">
+      <button class="px-6 py-2 rounded-full text-xs font-bold transition-all bg-primary text-white shadow-sm">Hoje</button>
+      <button class="px-6 py-2 rounded-full text-xs font-bold transition-all text-on-surface-variant hover:bg-white/50">Semana</button>
+      <button class="px-6 py-2 rounded-full text-xs font-bold transition-all text-on-surface-variant hover:bg-white/50">Mês</button>
+      <div class="w-px h-4 bg-outline-variant mx-1"></div>
+      <button class="px-4 py-2 rounded-full text-xs font-bold transition-all text-on-surface-variant hover:bg-white/50 flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">date_range</span> Personalizado
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Card 1: Total de Agendamentos -->
+      <div class="bg-surface-container-lowest rounded-xl p-6 ambient-bloom border border-outline-variant/5">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-3 bg-brand-soft-pink rounded-lg bg-opacity-20"><span class="material-symbols-outlined text-primary">calendar_month</span></div>
+          <span class="text-xs font-bold px-2 py-1 rounded-full text-emerald-600 bg-emerald-50" id="metric-agendamentos-badge">+0%</span>
+        </div>
+        <p class="font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">Total de Agendamentos</p>
+        <h3 class="font-headline text-3xl font-bold text-on-surface mt-1 opacity-50 animate-pulse" id="metric-agendamentos">—</h3>
+        <p class="text-[10px] text-on-surface-variant mt-2" id="metric-agendamentos-prev">Vs. — no mês anterior</p>
+      </div>
+      <!-- Card 2: Faturamento -->
+      <div class="bg-surface-container-lowest rounded-xl p-6 ambient-bloom border border-outline-variant/5">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-3 bg-brand-soft-pink rounded-lg bg-opacity-20"><span class="material-symbols-outlined text-primary">payments</span></div>
+          <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Mês</span>
+        </div>
+        <p class="font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">Faturamento de Serviços</p>
+        <h3 class="font-headline text-3xl font-bold text-on-surface mt-1 opacity-50 animate-pulse" id="metric-faturamento">R$ —</h3>
+        <p class="text-[10px] text-on-surface-variant mt-2">Pagamentos confirmados no mês</p>
+      </div>
+      <!-- Card 3: Total de Pacientes -->
+      <div class="bg-surface-container-lowest rounded-xl p-6 ambient-bloom border border-outline-variant/5">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-3 bg-brand-soft-pink rounded-lg bg-opacity-20"><span class="material-symbols-outlined text-primary">group</span></div>
+          <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Total</span>
+        </div>
+        <p class="font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">Total de Pacientes</p>
+        <h3 class="font-headline text-3xl font-bold text-on-surface mt-1 opacity-50 animate-pulse" id="metric-pacientes">—</h3>
+        <p class="text-[10px] text-on-surface-variant mt-2">Base de pacientes cadastrados</p>
+      </div>
+      <!-- Card 4: Ticket Médio -->
+      <div class="bg-surface-container-lowest rounded-xl p-6 ambient-bloom border border-outline-variant/5">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-3 bg-brand-soft-pink rounded-lg bg-opacity-20"><span class="material-symbols-outlined text-primary">confirmation_number</span></div>
+          <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Média</span>
+        </div>
+        <p class="font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">Ticket Médio</p>
+        <h3 class="font-headline text-3xl font-bold text-on-surface mt-1 opacity-50 animate-pulse" id="metric-ticket">R$ —</h3>
+        <p class="text-[10px] text-on-surface-variant mt-2">Média por atendimento realizado</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-8">
+      <div class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-xl p-8 ambient-bloom border border-outline-variant/5">
+        <div class="flex justify-between items-center mb-10">
+          <div>
+            <h3 class="font-headline text-xl font-bold text-on-surface">Desempenho Semanal</h3>
+            <p class="text-xs text-on-surface-variant">Análise de volume de agendamentos por dia</p>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-primary"></span><span class="text-xs text-on-surface-variant">Atual</span></div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-surface-container-high"></span><span class="text-xs text-on-surface-variant">Anterior</span></div>
+          </div>
+        </div>
+        <div class="flex items-end justify-between h-64 gap-6 px-4">
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="w-full bg-primary rounded-t-lg chart-bar transition-all duration-500" style="height: 5%"></div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Seg</span>
+          </div>
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="w-full bg-primary rounded-t-lg chart-bar transition-all duration-500" style="height: 5%"></div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Ter</span>
+          </div>
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="w-full bg-primary rounded-t-lg chart-bar transition-all duration-500" style="height: 5%"></div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Qua</span>
+          </div>
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="w-full bg-primary rounded-t-lg chart-bar transition-all duration-500" style="height: 5%"></div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Qui</span>
+          </div>
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="w-full bg-primary rounded-t-lg chart-bar transition-all duration-500" style="height: 5%"></div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Sex</span>
+          </div>
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="w-full bg-primary rounded-t-lg chart-bar transition-all duration-500" style="height: 5%"></div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Sáb</span>
+          </div>
+          <div class="flex flex-col items-center gap-2 w-full">
+            <div class="w-full bg-primary rounded-t-lg chart-bar transition-all duration-500" style="height: 5%"></div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Dom</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-12 lg:col-span-4 space-y-8">
+        <div class="bg-surface-container-lowest rounded-xl p-8 ambient-bloom border border-outline-variant/5 h-full">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="font-headline text-xl font-bold text-on-surface">Agenda de Hoje</h3>
+            <a href="agenda.html" class="text-xs text-primary font-bold hover:underline">Ver Todos</a>
+          </div>
+          <div class="space-y-2" id="agenda-hoje-list">
+            <div class="flex items-start gap-4 p-3 rounded-xl">
+              <div class="w-12 h-12 rounded-full bg-surface-container animate-pulse shrink-0"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-3 bg-surface-container rounded animate-pulse w-3/4"></div>
+                <div class="h-2 bg-surface-container rounded animate-pulse w-1/2"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-10 p-6 bg-brand-soft-pink bg-opacity-10 rounded-xl border border-brand-soft-pink/20">
+            <p class="text-xs font-bold text-primary mb-2">Insight da IA</p>
+            <p class="text-xs text-on-surface-variant leading-relaxed">Sexta-feira costuma ser seu dia mais produtivo. Considere abrir horários extras para aumentar o faturamento em 15%.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadDashboard(session) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+    const todayStr = now.toISOString().split('T')[0];
+
+    // Start of week (Monday)
+    const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - dayOfWeek); startOfWeek.setHours(0,0,0,0);
+    const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(startOfWeek.getDate() + 6); endOfWeek.setHours(23,59,59,999);
+
+    const [
+      { count: totalAgendamentos },
+      { data: pagamentos },
+      { data: concluidos },
+      { data: agendaHoje },
+      { data: semana },
+      { count: totalPacientes },
+      { count: mesAnteriorCount }
+    ] = await Promise.all([
+      _supabase.from('agendamentos').select('*', { count: 'exact', head: true }).gte('inicio', startOfMonth).lte('inicio', endOfMonth),
+      _supabase.from('pagamentos').select('valor').eq('status', 'pago').gte('data_pagamento', startOfMonth),
+      _supabase.from('agendamentos').select('valor_cobrado').eq('status', 'concluido').not('valor_cobrado', 'is', null).gte('inicio', startOfMonth),
+      _supabase.from('agendamentos').select('paciente_nome, procedimento_nome, inicio, fim, status').gte('inicio', todayStr + 'T00:00:00').lte('inicio', todayStr + 'T23:59:59').order('inicio'),
+      _supabase.from('agendamentos').select('inicio').gte('inicio', startOfWeek.toISOString()).lte('inicio', endOfWeek.toISOString()),
+      _supabase.from('pacientes').select('*', { count: 'exact', head: true }),
+      _supabase.from('agendamentos').select('*', { count: 'exact', head: true }).gte('inicio', new Date(now.getFullYear(), now.getMonth()-1, 1).toISOString()).lte('inicio', new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59).toISOString())
+    ]);
+
+    // Faturamento
+    const faturamento = (pagamentos || []).reduce((s, p) => s + Number(p.valor), 0);
+
+    // Ticket médio
+    const ticketMedio = concluidos?.length
+      ? (concluidos.reduce((s, a) => s + Number(a.valor_cobrado), 0) / concluidos.length)
+      : 0;
+
+    // % variação agendamentos vs mês anterior
+    const varAgendamentos = mesAnteriorCount > 0
+      ? Math.round(((totalAgendamentos - mesAnteriorCount) / mesAnteriorCount) * 100)
+      : 0;
+
+    // Remove loading state
+    document.getElementById('metric-agendamentos').classList.remove('opacity-50', 'animate-pulse');
+    document.getElementById('metric-faturamento').classList.remove('opacity-50', 'animate-pulse');
+    document.getElementById('metric-ticket').classList.remove('opacity-50', 'animate-pulse');
+    document.getElementById('metric-pacientes').classList.remove('opacity-50', 'animate-pulse');
+
+    // Update metric cards
+    document.getElementById('metric-agendamentos').textContent = totalAgendamentos ?? 0;
+    document.getElementById('metric-agendamentos-prev').textContent = `Vs. ${mesAnteriorCount ?? 0} no mês anterior`;
+    document.getElementById('metric-agendamentos-badge').textContent = (varAgendamentos >= 0 ? '+' : '') + varAgendamentos + '%';
+    document.getElementById('metric-agendamentos-badge').className = `text-xs font-bold px-2 py-1 rounded-full ${varAgendamentos >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`;
+
+    document.getElementById('metric-faturamento').textContent = 'R$ ' + faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 0 });
+    document.getElementById('metric-ticket').textContent = 'R$ ' + ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    document.getElementById('metric-pacientes').textContent = totalPacientes ?? 0;
+
+    // Weekly chart - count per day (Mon=0...Sun=6)
+    const countPerDay = [0,0,0,0,0,0,0];
+    (semana || []).forEach(a => {
+      const d = new Date(a.inicio).getDay(); // 0=Sun
+      const idx = d === 0 ? 6 : d - 1; // Mon=0
+      countPerDay[idx]++;
+    });
+    const maxCount = Math.max(...countPerDay, 1);
+    const bars = document.querySelectorAll('.chart-bar');
+    bars.forEach((bar, i) => {
+      const pct = Math.round((countPerDay[i] / maxCount) * 95);
+      bar.style.height = Math.max(pct, 5) + '%';
+      bar.title = countPerDay[i] + ' agendamentos';
+    });
+
+    // Today's agenda
+    const agendaContainer = document.getElementById('agenda-hoje-list');
+    if (!agendaHoje || agendaHoje.length === 0) {
+      agendaContainer.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-8">Nenhum agendamento para hoje.</p>';
+    } else {
+      agendaContainer.innerHTML = agendaHoje.map(a => {
+        const hora = new Date(a.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const statusColor = a.status === 'confirmado' ? 'bg-emerald-50 text-emerald-700' : a.status === 'cancelado' ? 'bg-rose-50 text-rose-700' : 'bg-surface-container text-on-surface-variant';
+        return `
+          <div class="flex items-start gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-all cursor-pointer">
+            <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">${hora}</div>
+            <div>
+              <p class="text-sm font-bold text-on-surface">${a.paciente_nome}</p>
+              <p class="text-xs text-on-surface-variant">${a.procedimento_nome || '—'}</p>
+              <span class="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColor}">${a.status}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // user info
+    document.getElementById('user-email').textContent = session.user.email;
+    document.getElementById('user-initials').textContent = session.user.email.substring(0,2).toUpperCase();
+    document.getElementById('current-date').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+
+  (async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    await loadDashboard(session);
+  })();
+
+  document.querySelectorAll('[data-action="logout"]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await _supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+  });
+</script>
+</body>
+</html>

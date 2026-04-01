@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Clinic — Procedimentos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-surface-variant":"#5c5f62","surface-variant":"#e1e3e5","on-surface":"#303335","surface-container":"#edeef0","secondary-container":"#ffdad9","background":"#faf9fa","on-tertiary-container":"#5b3654","tertiary-container":"#ecbadf","surface-container-low":"#f3f3f5","on-primary":"#fff7f7","on-primary-container":"#47001f","surface-container-highest":"#e1e3e5","error":"#a73b21","outline":"#787b7d","surface-container-high":"#e7e8ea","primary-container":"#fd6c9c","primary-fixed":"#fd6c9c","on-primary-fixed-variant":"#590029","surface-bright":"#faf9fa","on-secondary":"#fff7f6","outline-variant":"#b0b2b5","secondary":"#775757","primary-dim":"#9c1f52","primary":"#ac2d5e","surface":"#faf9fa","tertiary":"#7a5272","surface-container-lowest":"#ffffff","on-tertiary":"#fff7f9","primary-fixed-dim":"#ec5f8f"
+        },
+        fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .premium-gradient { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
+  .tonal-glass { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); }
+</style>
+</head>
+<body class="bg-background font-body text-on-surface antialiased">
+
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#f3f3f5] font-['Manrope'] text-sm font-medium z-50">
+  <div class="flex flex-col h-full p-4 gap-2">
+    <div class="px-4 py-8 mb-4">
+      <h1 class="text-lg font-extrabold text-[#ac2d5e]">Core Clinic</h1>
+      <p class="text-xs text-on-surface-variant/70">Gestão Médica</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] hover:translate-x-1 transition-transform duration-200" href="dashboard.html">
+        <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] hover:translate-x-1 transition-transform duration-200" href="agenda.html">
+        <span class="material-symbols-outlined">calendar_today</span><span>Agenda</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] hover:translate-x-1 transition-transform duration-200" href="pacientes.html">
+        <span class="material-symbols-outlined">group</span><span>Pacientes</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 bg-[#ffffff] text-[#ac2d5e] rounded-lg shadow-sm scale-95 transition-all" href="procedimentos.html">
+        <span class="material-symbols-outlined">medical_services</span><span>Procedimentos</span>
+      </a>
+    </nav>
+    <div class="mt-auto pt-4 border-t border-outline-variant/10">
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] transition-colors" href="#">
+        <span class="material-symbols-outlined">help</span><span>Suporte</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] transition-colors cursor-pointer" href="#" data-action="logout">
+        <span class="material-symbols-outlined">logout</span><span>Sair</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<main class="ml-64 min-h-screen">
+  <header class="sticky top-0 z-40 bg-white font-['Manrope'] text-sm tracking-tight border-b border-[#f3f3f5]">
+    <div class="flex justify-between items-center w-full px-8 py-4">
+      <div class="flex items-center gap-4">
+        <h2 class="text-xl font-bold text-[#ac2d5e]">Portal Médico</h2>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+          <input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-primary-fixed-dim/30 w-64" placeholder="Buscar procedimentos..." type="text"/>
+        </div>
+        <div class="flex items-center gap-4">
+          <button class="text-on-surface-variant hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">notifications</span>
+          </button>
+          <div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold text-xs" id="user-initials">--</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="px-12 py-10 max-w-7xl mx-auto">
+    <div class="flex justify-between items-end mb-12">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-widest text-primary mb-2 block">Catálogo de Serviços</span>
+        <h1 class="text-5xl font-extrabold font-headline tracking-tight text-on-surface">Procedimentos</h1>
+      </div>
+      <button class="premium-gradient text-white px-8 py-4 rounded-full font-headline text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+        <span class="material-symbols-outlined">add</span> Novo Procedimento
+      </button>
+    </div>
+
+    <div class="grid grid-cols-4 gap-6 mb-12">
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+        <p class="text-xs text-on-surface-variant font-medium mb-1">Total de Serviços</p>
+        <p class="text-2xl font-headline font-bold opacity-50 animate-pulse" id="stat-total">—</p>
+      </div>
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+        <p class="text-xs text-on-surface-variant font-medium mb-1">Mais Procurado</p>
+        <p class="text-2xl font-headline font-bold text-primary opacity-50 animate-pulse" id="stat-mais-procurado">—</p>
+      </div>
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+        <p class="text-xs text-on-surface-variant font-medium mb-1">Tempo Médio</p>
+        <p class="text-2xl font-headline font-bold opacity-50 animate-pulse" id="stat-tempo-medio">—</p>
+      </div>
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10">
+        <p class="text-xs text-on-surface-variant font-medium mb-1">Ticket Médio</p>
+        <p class="text-2xl font-headline font-bold opacity-50 animate-pulse" id="stat-ticket-medio">—</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="procedimentos-grid">
+      <!-- Loading skeleton -->
+      <div class="bg-surface-container-lowest rounded-xl overflow-hidden flex flex-col">
+        <div class="h-48 bg-surface-container animate-pulse"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-4 bg-surface-container rounded animate-pulse w-3/4"></div>
+          <div class="h-3 bg-surface-container rounded animate-pulse w-full"></div>
+          <div class="h-3 bg-surface-container rounded animate-pulse w-2/3"></div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl overflow-hidden flex flex-col">
+        <div class="h-48 bg-surface-container animate-pulse"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-4 bg-surface-container rounded animate-pulse w-3/4"></div>
+          <div class="h-3 bg-surface-container rounded animate-pulse w-full"></div>
+          <div class="h-3 bg-surface-container rounded animate-pulse w-2/3"></div>
+        </div>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl overflow-hidden flex flex-col">
+        <div class="h-48 bg-surface-container animate-pulse"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-4 bg-surface-container rounded animate-pulse w-3/4"></div>
+          <div class="h-3 bg-surface-container rounded animate-pulse w-full"></div>
+          <div class="h-3 bg-surface-container rounded animate-pulse w-2/3"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-16 pt-8 border-t border-outline-variant/10 flex justify-between items-center text-sm text-on-surface-variant">
+      <p id="pagina-info">Carregando...</p>
+      <div class="flex gap-2">
+        <button class="h-10 w-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary-container/20 transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+        <button class="h-10 w-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold">1</button>
+        <button class="h-10 w-10 flex items-center justify-center rounded-lg bg-surface-container-low hover:bg-primary-container/20 transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const { createClient } = supabase;
+  const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadProcedimentos(session) {
+    const { data: procedimentos, count: total } = await _supabase
+      .from('procedimentos')
+      .select('*', { count: 'exact' })
+      .eq('ativo', true)
+      .order('nome');
+
+    // Stats
+    if (procedimentos && procedimentos.length > 0) {
+      const avgDuracao = Math.round(procedimentos.reduce((s,p) => s + p.duracao_minutos, 0) / procedimentos.length);
+      const avgValor = procedimentos.reduce((s,p) => s + Number(p.valor), 0) / procedimentos.length;
+      const maisCaros = [...procedimentos].sort((a,b) => b.valor - a.valor);
+
+      document.getElementById('stat-total').classList.remove('opacity-50', 'animate-pulse');
+      document.getElementById('stat-mais-procurado').classList.remove('opacity-50', 'animate-pulse');
+      document.getElementById('stat-tempo-medio').classList.remove('opacity-50', 'animate-pulse');
+      document.getElementById('stat-ticket-medio').classList.remove('opacity-50', 'animate-pulse');
+
+      document.getElementById('stat-total').textContent = total ?? 0;
+      document.getElementById('stat-mais-procurado').textContent = maisCaros[0]?.nome || '—';
+      document.getElementById('stat-tempo-medio').textContent = avgDuracao + ' min';
+      document.getElementById('stat-ticket-medio').textContent = 'R$ ' + Math.round(avgValor).toLocaleString('pt-BR');
+    }
+
+    // Cards grid
+    const grid = document.getElementById('procedimentos-grid');
+    const cardImages = {
+      'Estética Facial': 'https://lh3.googleusercontent.com/aida-public/AB6AXuD-xOsZeKhGdC-o32xkaYAs_fuetviKkB4qUwhx1d3JTHjKMcIaTRjf4QEsa5oNkURoEfdpAhi68sEof-uRQzOUoiU_CeSPgjRRrvjY8IFVQevsBoHozvD74SheqsYUhwU_-kMTwR7BAnkrxQmXZ66a9b1iAyZnW3sGMwJ4YbhrXPJPtTG2nU93xugJtohl-iBSk7fGpF81qBS73uHybZhI46kGS0_PHMaC-Yfk2fjpihuYxTznQfa2m6EM0SOtIjwnSni7vYAWFDK6',
+      'Injetáveis': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCX1PGsC_8Et9f6-5464JkBOzgxvIvZ6qdhV4rUnoJqLFwlE8XGjgSwd9RVONf9Cp5PMbWk2Gl-aQAwcGOVbLBXCQSe9qyMk3JtF9Tm-4ovxIpv-lrEaJMRdusOpTvC5GN82YgTeYtblG9ozlmsyBnmOHr-Ut2wC_ILIu6L_d10UzAcsrD9-yC2xusD54yukD_ZgAFtWjazRF8xzhdF3SFtnJE6mkJXYSDsuSud-Jtgby9YgnSRhSP6b_zvTnX64wbP5t4nxq6swtpm',
+      'Renovação': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCB6Vnpn5-GpXY4X2ItYvcu2fsFzdW2ZgsnVCUq06MVignpb4H2A3br__pc7ZQHiOl8eBbJBpRH3IJqZg86afvAHX5yy4BX6upDb6IsukePfexhApcpP_DuDv8B0wj2HYCaE5-zLC2bOOHcaQ2TEXjzTrpbNvrKT2C6sS1q-HKCMJ9SgcpBAYuQk2nMJPh2c5Ou9AC4JXWpfYWsnD2PGW4PMmsCTqKXWrccM3nofUZulRCXlLdNJFGnztTTSmVp6CMuFZZ_8i2aNcSd',
+      'Harmonização': 'https://lh3.googleusercontent.com/aida-public/AB6AXuAjl0AQqQjhBJCN6TN5l_W8wV1EC5s0w2qs8rcKgpFb5r9f8go0Erf7X6Ru_07HAEDEfcrQ5b-b5wpmeNvxFFUlp9tKRwomRQodpVM27PRaS0E3dwg_qORMPHs50bfddIMAD7_iWY_BaPQpiI_ZoouC_-Ap-mUGZtSnnqRaeyiWBWCQ39Mhn1DX0VXxh1QS0ji4T4KzghdYsyVKjXsk5trFYGq0u-ilFC4sYVM9TcCE4eATQLsz6QTR9CckdOrr3mMs8mlEaj9quVSC',
+    };
+    const defaultImg = cardImages['Renovação'];
+
+    if (!procedimentos || procedimentos.length === 0) {
+      grid.innerHTML = '<p class="col-span-3 text-center text-on-surface-variant py-16">Nenhum procedimento cadastrado.</p>';
+      document.getElementById('pagina-info').textContent = '0 procedimentos ativos';
+      return;
+    }
+
+    grid.innerHTML = procedimentos.map(p => `
+      <div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0px_12px_32px_rgba(48,51,53,0.06)] transition-all duration-300 flex flex-col">
+        <div class="relative h-48 overflow-hidden">
+          <img alt="${p.nome}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            src="${cardImages[p.categoria] || defaultImg}"
+            onerror="this.src='${defaultImg}'"/>
+          <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase">${p.categoria || 'Geral'}</div>
+        </div>
+        <div class="p-6 flex flex-col flex-1">
+          <h3 class="text-xl font-headline font-bold mb-2">${p.nome}</h3>
+          <p class="text-sm text-on-surface-variant line-clamp-2 mb-6">${p.descricao || '—'}</p>
+          <div class="mt-auto space-y-4">
+            <div class="flex justify-between items-center text-sm font-medium">
+              <div class="flex items-center gap-2 text-on-surface-variant">
+                <span class="material-symbols-outlined text-lg">schedule</span>
+                <span>${p.duracao_minutos} min</span>
+              </div>
+              <div class="text-primary-dim font-headline font-bold">R$ ${Number(p.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
+            </div>
+            <button class="w-full py-3 bg-surface-container-high rounded-lg text-sm font-semibold hover:bg-primary hover:text-white transition-colors">Ver Detalhes</button>
+          </div>
+        </div>
+      </div>`).join('') + `
+      <div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0px_12px_32px_rgba(48,51,53,0.06)] transition-all duration-300 flex flex-col border border-dashed border-primary/20 bg-primary/5 cursor-pointer">
+        <div class="flex-1 flex flex-col items-center justify-center p-12 text-center group-hover:bg-primary/10 transition-colors">
+          <div class="h-16 w-16 rounded-full bg-white flex items-center justify-center text-primary shadow-sm mb-4">
+            <span class="material-symbols-outlined text-3xl">add_circle</span>
+          </div>
+          <h3 class="text-lg font-headline font-bold text-on-surface">Cadastrar Novo</h3>
+          <p class="text-xs text-on-surface-variant mt-2">Adicione um novo serviço ao catálogo.</p>
+        </div>
+      </div>`;
+
+    document.getElementById('pagina-info').textContent = `Exibindo ${procedimentos.length} de ${total} procedimentos ativos`;
+    document.getElementById('user-initials').textContent = session.user.email.substring(0,2).toUpperCase();
+  }
+
+  (async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    await loadProcedimentos(session);
+  })();
+
+  document.querySelectorAll('[data-action="logout"]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await _supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+  });
+</script>
+</body>
+</html>
