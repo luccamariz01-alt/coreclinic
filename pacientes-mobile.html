@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pacientes - Core Clinic</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { font-family: 'Inter', sans-serif; background-color: #faf9fa; }
+  .font-headline { font-family: 'Manrope', sans-serif; }
+  .jewel-button { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
+  body { min-height: max(884px, 100dvh); }
+</style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary-fixed-variant": "#643e5d","tertiary-fixed-dim": "#deadd1","surface-container-lowest": "#ffffff","secondary-container": "#ffdad9","error-container": "#fd795a","secondary-fixed-dim": "#f5caca","secondary": "#775757","primary-fixed-dim": "#ec5f8f","on-secondary": "#fff7f6","surface-bright": "#faf9fa","outline-variant": "#b0b2b5","tertiary-dim": "#6d4665","on-tertiary-fixed": "#44223f","primary": "#ac2d5e","inverse-on-surface": "#9d9d9e","background": "#faf9fa","surface-container": "#edeef0","on-tertiary": "#fff7f9","error": "#a73b21","secondary-dim": "#6a4b4b","on-primary-fixed": "#000000","tertiary-fixed": "#ecbadf","on-error-container": "#6e1400","surface-container-low": "#f3f3f5","on-primary-container": "#47001f","on-background": "#303335","inverse-surface": "#0d0e0f","surface-tint": "#ac2d5e","tertiary-container": "#ecbadf","on-tertiary-container": "#5b3654","surface-variant": "#e1e3e5","on-error": "#fff7f6","on-surface-variant": "#5c5f62","on-secondary-fixed-variant": "#735354","surface-container-highest": "#e1e3e5","on-surface": "#303335","surface": "#faf9fa","primary-dim": "#9c1f52","on-secondary-container": "#694a4a","primary-fixed": "#fd6c9c","on-primary-fixed-variant": "#590029","error-dim": "#791903","primary-container": "#fd6c9c","on-primary": "#fff7f7","secondary-fixed": "#ffdad9","tertiary": "#7a5272","inverse-primary": "#fd6c9c","surface-container-high": "#e7e8ea","surface-dim": "#d8dadd","on-secondary-fixed": "#543838","outline": "#787b7d"
+        },
+        "borderRadius": {"DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px"},
+        "fontFamily": {"headline": ["Manrope"],"body": ["Inter"],"label": ["Inter"]}
+      },
+    },
+  }
+</script>
+</head>
+<body class="bg-surface pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#ac2d5e]">bubble_chart</span>
+<h1 class="text-xl font-extrabold text-[#ac2d5e] font-['Manrope'] tracking-tight">Core Clinic</h1>
+</div>
+<button class="active:scale-95 duration-150 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-[#303335]">notifications</span>
+</button>
+</header>
+<main class="px-6 pt-4 space-y-8">
+<!-- Search & Filter -->
+<section class="space-y-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-low border-none rounded-xl text-on-surface placeholder:text-on-surface-variant/60 focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-fixed-dim/30 transition-all outline-none font-body" placeholder="Buscar pacientes por nome..." type="text" id="search-input"/>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-2">
+<button class="px-4 py-2 rounded-full jewel-button text-on-primary text-xs font-semibold whitespace-nowrap filter-btn active-filter" data-filter="todos">Todos</button>
+<button class="px-4 py-2 rounded-full bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap filter-btn" data-filter="recentes">Recentes</button>
+</div>
+</section>
+<!-- Patients List -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<h2 class="font-headline text-2xl font-bold tracking-tight text-on-surface">Base de Pacientes</h2>
+<span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant" id="total-label">Carregando...</span>
+</div>
+<div class="space-y-3" id="patients-list">
+<div class="animate-pulse bg-surface-container-lowest p-5 rounded-xl h-20"></div>
+<div class="animate-pulse bg-surface-container-lowest p-5 rounded-xl h-20"></div>
+<div class="animate-pulse bg-surface-container-lowest p-5 rounded-xl h-20"></div>
+</div>
+</section>
+<!-- Summary Cards -->
+<section class="space-y-4">
+<h2 class="font-headline text-lg font-bold text-on-surface">Resumo Operacional</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden">
+<span class="material-symbols-outlined text-primary-container opacity-20 absolute -right-2 -bottom-2 text-6xl">person_add</span>
+<div>
+<p class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Novos Pacientes</p>
+<p class="text-xs text-on-surface-variant/60">Este mês</p>
+</div>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-headline font-extrabold text-primary" id="novos-pacientes">—</span>
+</div>
+</div>
+<div class="bg-tertiary-container/30 p-4 rounded-xl flex flex-col justify-between h-32 relative overflow-hidden">
+<span class="material-symbols-outlined text-tertiary opacity-10 absolute -right-2 -bottom-2 text-6xl">auto_awesome</span>
+<div>
+<p class="text-[10px] uppercase font-bold tracking-widest text-on-tertiary-container">Agendamentos</p>
+<p class="text-xs text-on-tertiary-container/60">Hoje</p>
+</div>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-headline font-extrabold text-on-tertiary-container" id="agendamentos-hoje">—</span>
+<span class="material-symbols-outlined text-on-tertiary-container text-sm mb-1">done_all</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-28 right-6 w-14 h-14 rounded-full jewel-button shadow-lg flex items-center justify-center text-white z-50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-colors rounded-[1rem] px-4 py-1.5 active:scale-90 duration-200" href="dashboard-mobile.html">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-colors rounded-[1rem] px-4 py-1.5 active:scale-90 duration-200" href="agenda-mobile.html">
+<span class="material-symbols-outlined mb-1">calendar_today</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Agenda</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#f3f3f5] text-[#ac2d5e] rounded-[1rem] px-4 py-1.5 active:scale-90 duration-200" href="pacientes-mobile.html">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Pacientes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-colors rounded-[1rem] px-4 py-1.5 active:scale-90 duration-200" href="procedimentos-mobile.html">
+<span class="material-symbols-outlined mb-1">medical_services</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Procedimentos</span>
+</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let allPatients = [];
+  let latestAgendamentoMap = {};
+  let activeFilter = 'todos';
+
+  // ── Session check ──────────────────────────────────────────────────────────
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login-mobile.html';
+    }
+  }
+
+  // ── Initials ───────────────────────────────────────────────────────────────
+  function getInitials(nome) {
+    if (!nome) return '?';
+    const parts = nome.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  // ── Date format pt-BR ──────────────────────────────────────────────────────
+  function formatDatePtBR(isoString) {
+    if (!isoString) return 'Sem visitas';
+    const date = new Date(isoString);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+      .replace('.', '')
+      .replace(/(\d{2}) (\w+) (\d{4})/, (_, d, m, y) => `${d} ${m[0].toUpperCase() + m.slice(1)}, ${y}`);
+  }
+
+  // ── Render patients ────────────────────────────────────────────────────────
+  function renderPatients(patients) {
+    const listEl = document.getElementById('patients-list');
+    const totalLabel = document.getElementById('total-label');
+
+    if (!patients || patients.length === 0) {
+      listEl.innerHTML = `<p class="text-sm text-on-surface-variant text-center py-8">Nenhum paciente encontrado.</p>`;
+      totalLabel.textContent = '0 pacientes';
+      return;
+    }
+
+    totalLabel.textContent = `${patients.length} paciente${patients.length !== 1 ? 's' : ''}`;
+
+    listEl.innerHTML = patients.map(patient => {
+      const initials = getInitials(patient.nome);
+      const lastAgendamento = latestAgendamentoMap[patient.id];
+      const lastVisitDate = lastAgendamento ? formatDatePtBR(lastAgendamento.inicio) : 'Sem visitas';
+      const lastProcedimento = lastAgendamento ? (lastAgendamento.procedimento_nome || '—') : '—';
+
+      return `
+        <div class="bg-surface-container-lowest p-5 rounded-xl flex items-center gap-4 transition-transform active:scale-[0.98] cursor-pointer" onclick="window.location.href='prontuario-mobile.html?id=${patient.id}'">
+          <div class="w-12 h-12 rounded-full bg-primary-container/20 flex-shrink-0 flex items-center justify-center text-primary font-bold text-lg">
+            ${initials}
+          </div>
+          <div class="flex-grow">
+            <h3 class="font-headline font-bold text-on-surface">${patient.nome || '—'}</h3>
+            <div class="flex items-center gap-3 mt-1">
+              <div class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-on-surface-variant">event</span>
+                <span class="text-xs text-on-surface-variant">${lastVisitDate}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary">medical_information</span>
+                <span class="text-xs text-on-surface-variant">${lastProcedimento}</span>
+              </div>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── Filter logic ───────────────────────────────────────────────────────────
+  function applyFilters() {
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
+    let filtered = allPatients;
+
+    if (activeFilter === 'recentes') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      filtered = filtered.filter(p => new Date(p.created_at) >= thirtyDaysAgo);
+    }
+
+    if (query) {
+      filtered = filtered.filter(p =>
+        p.nome && p.nome.toLowerCase().includes(query)
+      );
+    }
+
+    renderPatients(filtered);
+  }
+
+  // ── Load metrics ───────────────────────────────────────────────────────────
+  async function loadMetrics() {
+    const now = new Date();
+
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
+
+    const [{ count: newPatientsCount }, { count: agendamentosHojeCount }] = await Promise.all([
+      supabase
+        .from('pacientes')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', monthStart),
+      supabase
+        .from('agendamentos')
+        .select('id', { count: 'exact', head: true })
+        .gte('inicio', todayStart)
+        .lte('inicio', todayEnd),
+    ]);
+
+    document.getElementById('novos-pacientes').textContent = newPatientsCount ?? 0;
+    document.getElementById('agendamentos-hoje').textContent = agendamentosHojeCount ?? 0;
+  }
+
+  // ── Load data ──────────────────────────────────────────────────────────────
+  async function loadData() {
+    // Load patients ordered by created_at desc
+    const { data: patients, error: patientsError } = await supabase
+      .from('pacientes')
+      .select('id, nome, created_at, telefone')
+      .order('created_at', { ascending: false });
+
+    if (patientsError) {
+      document.getElementById('patients-list').innerHTML =
+        `<p class="text-sm text-error text-center py-8">Erro ao carregar pacientes.</p>`;
+      document.getElementById('total-label').textContent = '';
+      return;
+    }
+
+    allPatients = patients || [];
+
+    // Load latest agendamentos (up to 200) to build patient → latest map
+    const { data: agendamentos } = await supabase
+      .from('agendamentos')
+      .select('paciente_id, procedimento_nome, inicio')
+      .order('inicio', { ascending: false })
+      .limit(200);
+
+    latestAgendamentoMap = {};
+    if (agendamentos) {
+      // Since ordered desc by inicio, the first occurrence per patient_id is the latest
+      agendamentos.forEach(ag => {
+        if (ag.paciente_id && !latestAgendamentoMap[ag.paciente_id]) {
+          latestAgendamentoMap[ag.paciente_id] = ag;
+        }
+      });
+    }
+
+    applyFilters();
+  }
+
+  // ── Filter buttons ─────────────────────────────────────────────────────────
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.filter;
+
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('jewel-button', 'text-on-primary', 'active-filter');
+        b.classList.add('bg-surface-container-highest', 'text-on-surface');
+      });
+
+      btn.classList.add('jewel-button', 'text-on-primary', 'active-filter');
+      btn.classList.remove('bg-surface-container-highest', 'text-on-surface');
+
+      applyFilters();
+    });
+  });
+
+  // ── Search input ───────────────────────────────────────────────────────────
+  document.getElementById('search-input').addEventListener('input', applyFilters);
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  (async () => {
+    await checkSession();
+    loadMetrics();
+    await loadData();
+  })();
+</script>
+</body></html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Procedimentos - Core Clinic</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary-fixed-variant": "#643e5d","tertiary-fixed-dim": "#deadd1","surface-container-lowest": "#ffffff","secondary-container": "#ffdad9","error-container": "#fd795a","secondary-fixed-dim": "#f5caca","secondary": "#775757","primary-fixed-dim": "#ec5f8f","on-secondary": "#fff7f6","surface-bright": "#faf9fa","outline-variant": "#b0b2b5","tertiary-dim": "#6d4665","on-tertiary-fixed": "#44223f","primary": "#ac2d5e","inverse-on-surface": "#9d9d9e","background": "#faf9fa","surface-container": "#edeef0","on-tertiary": "#fff7f9","error": "#a73b21","secondary-dim": "#6a4b4b","on-primary-fixed": "#000000","tertiary-fixed": "#ecbadf","on-error-container": "#6e1400","surface-container-low": "#f3f3f5","on-primary-container": "#47001f","on-background": "#303335","inverse-surface": "#0d0e0f","surface-tint": "#ac2d5e","tertiary-container": "#ecbadf","on-tertiary-container": "#5b3654","surface-variant": "#e1e3e5","on-error": "#fff7f6","on-secondary-fixed-variant": "#735354","surface-container-highest": "#e1e3e5","on-surface": "#303335","surface": "#faf9fa","primary-dim": "#9c1f52","on-secondary-container": "#694a4a","primary-fixed": "#fd6c9c","on-primary-fixed-variant": "#590029","error-dim": "#791903","primary-container": "#fd6c9c","on-primary": "#fff7f7","secondary-fixed": "#ffdad9","tertiary": "#7a5272","inverse-primary": "#fd6c9c","surface-container-high": "#e7e8ea","surface-dim": "#d8dadd","on-secondary-fixed": "#543838","outline": "#787b7d"
+        },
+        "borderRadius": {"DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px"},
+        "fontFamily": {"headline": ["Manrope"],"body": ["Inter"],"label": ["Inter"]}
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { font-family: 'Inter', sans-serif; }
+  h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+  body { min-height: max(884px, 100dvh); }
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-[#faf9fa] z-50">
+<div class="flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#ac2d5e] text-2xl">bubble_chart</span>
+<h1 class="font-['Manrope'] font-bold tracking-tight text-xl text-[#ac2d5e]">Core Clinic</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-[#303335] hover:opacity-80 transition-opacity active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<main class="px-6 pt-4 space-y-8">
+<!-- Metrics Bento -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest rounded-xl p-4 flex flex-col justify-between h-32">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Ativos</span>
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+</div>
+<div>
+<div class="text-2xl font-extrabold font-headline" id="total-procedimentos">—</div>
+<div class="text-[10px] text-on-surface-variant font-medium">Procedimentos cadastrados</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-4 flex flex-col justify-between h-32">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Média</span>
+<span class="material-symbols-outlined text-tertiary text-xl">payments</span>
+</div>
+<div>
+<div class="text-2xl font-extrabold font-headline" id="ticket-medio">R$ —</div>
+<div class="text-[10px] text-on-surface-variant font-medium">Ticket médio atual</div>
+</div>
+</div>
+</section>
+<!-- Header -->
+<div class="flex items-center justify-between">
+<h2 class="text-2xl font-extrabold tracking-tight font-headline">Procedimentos</h2>
+<button class="text-primary font-bold text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">tune</span>
+<span>Filtros</span>
+</button>
+</div>
+<!-- Procedures List -->
+<section class="space-y-6" id="procedimentos-list">
+<div class="animate-pulse bg-surface-container-lowest rounded-xl h-64"></div>
+<div class="animate-pulse bg-surface-container-lowest rounded-xl h-64"></div>
+</section>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-gradient-to-br from-[#ac2d5e] to-[#fd6c9c] text-on-primary rounded-full shadow-[0px_12px_32px_rgba(48,51,53,0.3)] flex items-center justify-center active:scale-90 transition-transform duration-200 z-[60]">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] active:scale-90 duration-200 p-2 rounded-xl" href="dashboard-mobile.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] active:scale-90 duration-200 p-2 rounded-xl" href="agenda-mobile.html">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Agenda</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] active:scale-90 duration-200 p-2 rounded-xl" href="pacientes-mobile.html">
+<span class="material-symbols-outlined">group</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Pacientes</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#f3f3f5] text-[#ac2d5e] rounded-[1rem] px-4 py-1.5 active:scale-90 transition-transform duration-200" href="procedimentos-mobile.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Procedimentos</span>
+</a>
+</nav>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function formatValor(value) {
+    return Number(value).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function renderProcedimentos(procedimentos) {
+    const container = document.getElementById('procedimentos-list');
+
+    if (!procedimentos || procedimentos.length === 0) {
+      container.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-8">Nenhum procedimento cadastrado.</p>';
+      return;
+    }
+
+    container.innerHTML = procedimentos.map(proc => {
+      const nome = proc.nome || '—';
+      const categoria = proc.categoria || '—';
+      const descricao = proc.descricao || '';
+      const duracao = proc.duracao_minutos ?? '—';
+      const valor = proc.valor != null ? formatValor(proc.valor) : '—';
+
+      return `
+        <div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+          <div class="relative h-32 w-full bg-gradient-to-br from-primary/10 to-tertiary-container/30 flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-5xl opacity-40">medical_services</span>
+          </div>
+          <div class="p-5 space-y-3">
+            <div class="flex justify-between items-start">
+              <h3 class="text-lg font-bold font-headline leading-tight">${nome}</h3>
+              <div class="bg-tertiary-container/30 text-on-tertiary-container px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider">${categoria}</div>
+            </div>
+            <p class="text-sm text-on-surface-variant line-clamp-2 leading-relaxed">${descricao}</p>
+            <div class="flex items-center justify-between pt-2">
+              <div class="flex gap-4">
+                <div class="flex items-center gap-1.5 text-on-surface-variant">
+                  <span class="material-symbols-outlined text-lg">schedule</span>
+                  <span class="text-xs font-medium">${duracao} min</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-on-surface-variant">
+                  <span class="material-symbols-outlined text-lg">payments</span>
+                  <span class="text-xs font-medium">R$ ${valor}</span>
+                </div>
+              </div>
+              <button class="bg-primary/5 text-primary hover:bg-primary/10 p-2 rounded-full transition-colors">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function init() {
+    // 1. Check session
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login-mobile.html';
+      return;
+    }
+
+    // 2. Load procedures
+    const { data: procedimentos, error } = await _supabase
+      .from('procedimentos')
+      .select('*')
+      .eq('ativo', true)
+      .order('nome');
+
+    const list = procedimentos || [];
+
+    // 3. Update metrics
+    const total = list.length;
+    document.getElementById('total-procedimentos').textContent = total;
+
+    if (total > 0) {
+      const soma = list.reduce((acc, p) => acc + Number(p.valor || 0), 0);
+      const media = soma / total;
+      document.getElementById('ticket-medio').textContent = `R$ ${formatValor(media)}`;
+    } else {
+      document.getElementById('ticket-medio').textContent = 'R$ 0,00';
+    }
+
+    // 4. Render procedure cards
+    renderProcedimentos(list);
+  }
+
+  init();
+</script>
+</body></html>

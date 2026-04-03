@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Clinic - Agenda</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, .headline-font { font-family: 'Manrope', sans-serif; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  body { min-height: max(884px, 100dvh); }
+</style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary-fixed-variant": "#643e5d","tertiary-fixed-dim": "#deadd1","surface-container-lowest": "#ffffff","secondary-container": "#ffdad9","error-container": "#fd795a","secondary-fixed-dim": "#f5caca","secondary": "#775757","primary-fixed-dim": "#ec5f8f","on-secondary": "#fff7f6","surface-bright": "#faf9fa","outline-variant": "#b0b2b5","tertiary-dim": "#6d4665","on-tertiary-fixed": "#44223f","primary": "#ac2d5e","inverse-on-surface": "#9d9d9e","background": "#faf9fa","surface-container": "#edeef0","on-tertiary": "#fff7f9","error": "#a73b21","secondary-dim": "#6a4b4b","on-primary-fixed": "#000000","tertiary-fixed": "#ecbadf","on-error-container": "#6e1400","surface-container-low": "#f3f3f5","on-primary-container": "#47001f","on-background": "#303335","inverse-surface": "#0d0e0f","surface-tint": "#ac2d5e","tertiary-container": "#ecbadf","on-tertiary-container": "#5b3654","surface-variant": "#e1e3e5","on-error": "#fff7f6","on-surface-variant": "#5c5f62","on-secondary-fixed-variant": "#735354","surface-container-highest": "#e1e3e5","on-surface": "#303335","surface": "#faf9fa","primary-dim": "#9c1f52","on-secondary-container": "#694a4a","primary-fixed": "#fd6c9c","on-primary-fixed-variant": "#590029","error-dim": "#791903","primary-container": "#fd6c9c","on-primary": "#fff7f7","secondary-fixed": "#ffdad9","tertiary": "#7a5272","inverse-primary": "#fd6c9c","surface-container-high": "#e7e8ea","surface-dim": "#d8dadd","on-secondary-fixed": "#543838","outline": "#787b7d"
+        },
+        "borderRadius": {"DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px"},
+        "fontFamily": {"headline": ["Manrope"],"body": ["Inter"],"label": ["Inter"]}
+      },
+    },
+  }
+</script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- Top Navigation -->
+<header class="w-full top-0 sticky z-50 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#ac2d5e]">bubble_chart</span>
+<h1 class="font-['Manrope'] font-bold tracking-tight text-xl text-[#ac2d5e]">Core Clinic</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="active:scale-95 duration-150 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-[#303335]">notifications</span>
+</button>
+</div>
+</header>
+<main class="px-6 py-4 space-y-6">
+<!-- Metrics Horizontal Scroll -->
+<div class="flex overflow-x-auto gap-4 no-scrollbar -mx-6 px-6 pb-2">
+<div class="min-w-[200px] flex-1 bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-2">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+<span class="text-[10px] font-bold tracking-widest text-primary bg-primary-container/20 px-2 py-0.5 rounded-full uppercase" id="mes-label">MÊS</span>
+</div>
+<h3 class="text-on-surface-variant text-xs font-medium uppercase tracking-wider">Agendamentos no Mês</h3>
+<p class="text-2xl font-extrabold headline-font text-on-surface mt-1" id="metric-agendamentos-mes">—</p>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container" id="agendamentos-bar" style="width: 0%"></div>
+</div>
+</div>
+<div class="min-w-[200px] flex-1 bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-2">
+<span class="material-symbols-outlined text-tertiary">pie_chart</span>
+<span class="text-[10px] font-bold tracking-widest text-tertiary bg-tertiary-container/20 px-2 py-0.5 rounded-full uppercase">HOJE</span>
+</div>
+<h3 class="text-on-surface-variant text-xs font-medium uppercase tracking-wider">Agendamentos Hoje</h3>
+<p class="text-2xl font-extrabold headline-font text-on-surface mt-1" id="metric-agendamentos-hoje">—</p>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-tertiary" id="hoje-bar" style="width: 0%"></div>
+</div>
+</div>
+</div>
+<!-- Date Picker -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="headline-font font-bold text-lg text-on-surface">Calendário</h2>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+</button>
+</div>
+</div>
+<!-- Dynamic date picker will be rendered here -->
+<div class="flex overflow-x-auto gap-3 no-scrollbar pb-2" id="date-picker">
+<!-- Generated by JS -->
+</div>
+</section>
+<!-- Appointments List -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="headline-font font-bold text-lg text-on-surface">Agendamentos</h2>
+<span class="text-xs font-semibold text-primary underline" id="agendamentos-count-label"></span>
+</div>
+<div class="space-y-3" id="agendamentos-list">
+<div class="animate-pulse bg-surface-container-lowest rounded-xl h-20"></div>
+<div class="animate-pulse bg-surface-container-lowest rounded-xl h-20"></div>
+</div>
+</section>
+</main>
+<!-- FAB -->
+<button class="fixed right-6 bottom-28 w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-container text-white flex items-center justify-center shadow-lg shadow-primary/40 active:scale-90 transition-transform duration-200 z-50" id="fab-novo">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-all p-2 rounded-xl" href="dashboard-mobile.html">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#f3f3f5] text-[#ac2d5e] rounded-[1rem] px-4 py-1.5 transition-all" href="agenda-mobile.html">
+<span class="material-symbols-outlined mb-1">calendar_today</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Agenda</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-all p-2 rounded-xl" href="pacientes-mobile.html">
+<span class="material-symbols-outlined mb-1">group</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Pacientes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-all p-2 rounded-xl" href="procedimentos-mobile.html">
+<span class="material-symbols-outlined mb-1">medical_services</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Procedimentos</span>
+</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const DAY_ABBR = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+
+  let selectedDate = null;
+
+  // ── Session check ──────────────────────────────────────────────────────────
+  async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login-mobile.html';
+    }
+  }
+
+  // ── Date picker ────────────────────────────────────────────────────────────
+  function getWeekDates(referenceDate) {
+    const d = new Date(referenceDate);
+    // Monday-based week: go to Monday of the current week
+    const dayOfWeek = d.getDay(); // 0=Sun
+    const diffToMonday = (dayOfWeek === 0) ? -6 : 1 - dayOfWeek;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + diffToMonday);
+
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday);
+      day.setDate(monday.getDate() + i);
+      dates.push(day);
+    }
+    return dates;
+  }
+
+  function toYMD(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function buildDatePicker(selectedYMD) {
+    const today = new Date();
+    const weekDates = getWeekDates(today);
+    const picker = document.getElementById('date-picker');
+    picker.innerHTML = '';
+
+    weekDates.forEach(date => {
+      const ymd = toYMD(date);
+      const isActive = ymd === selectedYMD;
+      const abbr = DAY_ABBR[date.getDay()];
+      const dd = String(date.getDate()).padStart(2, '0');
+
+      let el;
+      if (isActive) {
+        el = document.createElement('div');
+        el.className = 'flex flex-col items-center justify-center min-w-[64px] py-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white shadow-lg shadow-primary/20 cursor-pointer date-item';
+        el.innerHTML = `
+          <span class="text-[10px] font-bold uppercase opacity-90">${abbr}</span>
+          <span class="text-xl font-extrabold headline-font">${dd}</span>
+          <div class="w-1.5 h-1.5 bg-white rounded-full mt-1"></div>
+        `;
+      } else {
+        el = document.createElement('div');
+        el.className = 'flex flex-col items-center justify-center min-w-[56px] py-4 rounded-xl bg-surface-container-low text-on-surface-variant cursor-pointer date-item';
+        el.innerHTML = `
+          <span class="text-[10px] font-bold uppercase">${abbr}</span>
+          <span class="text-lg font-bold headline-font">${dd}</span>
+        `;
+      }
+
+      el.dataset.date = ymd;
+      el.addEventListener('click', () => {
+        selectedDate = ymd;
+        buildDatePicker(ymd);
+        loadAgendamentos(ymd);
+      });
+
+      picker.appendChild(el);
+    });
+  }
+
+  // ── Metrics ────────────────────────────────────────────────────────────────
+  async function loadMetrics() {
+    const now = new Date();
+
+    // Month boundaries
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+
+    // Today boundaries
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
+
+    // Show current month label
+    const monthNames = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+    document.getElementById('mes-label').textContent = monthNames[now.getMonth()];
+
+    const [{ count: mesCount }, { count: hojeCount }] = await Promise.all([
+      supabase
+        .from('agendamentos')
+        .select('id', { count: 'exact', head: true })
+        .gte('inicio', monthStart)
+        .lte('inicio', monthEnd),
+      supabase
+        .from('agendamentos')
+        .select('id', { count: 'exact', head: true })
+        .gte('inicio', todayStart)
+        .lte('inicio', todayEnd),
+    ]);
+
+    const mes = mesCount ?? 0;
+    const hoje = hojeCount ?? 0;
+
+    document.getElementById('metric-agendamentos-mes').textContent = mes;
+    document.getElementById('metric-agendamentos-hoje').textContent = hoje;
+
+    // Progress bars: treat 30 as 100% for month, 10 as 100% for today
+    const mesPercent = Math.min(100, Math.round((mes / 30) * 100));
+    const hojePercent = Math.min(100, Math.round((hoje / 10) * 100));
+    document.getElementById('agendamentos-bar').style.width = `${mesPercent}%`;
+    document.getElementById('hoje-bar').style.width = `${hojePercent}%`;
+  }
+
+  // ── Status badge ───────────────────────────────────────────────────────────
+  function statusBadge(status) {
+    if (!status) return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-medium">—</span>`;
+    const s = status.toLowerCase();
+    if (s === 'confirmado') {
+      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-tertiary-container/40 text-on-tertiary-container font-medium">Confirmado</span>`;
+    }
+    if (s === 'aguardando' || s === 'agendado') {
+      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-medium">Aguardando</span>`;
+    }
+    if (s === 'urgente' || s === 'cancelado') {
+      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">Urgente</span>`;
+    }
+    return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-medium">${status}</span>`;
+  }
+
+  // ── Agendamentos list ──────────────────────────────────────────────────────
+  async function loadAgendamentos(ymd) {
+    const listEl = document.getElementById('agendamentos-list');
+    const countLabel = document.getElementById('agendamentos-count-label');
+
+    listEl.innerHTML = `
+      <div class="animate-pulse bg-surface-container-lowest rounded-xl h-20"></div>
+      <div class="animate-pulse bg-surface-container-lowest rounded-xl h-20"></div>
+    `;
+    countLabel.textContent = '';
+
+    const dateStart = `${ymd}T00:00:00`;
+    const dateEnd   = `${ymd}T23:59:59`;
+
+    const { data, error } = await supabase
+      .from('agendamentos')
+      .select('id, inicio, paciente_nome, procedimento_nome, status')
+      .gte('inicio', dateStart)
+      .lte('inicio', dateEnd)
+      .order('inicio', { ascending: true });
+
+    if (error) {
+      listEl.innerHTML = `<p class="text-sm text-error text-center py-8">Erro ao carregar agendamentos.</p>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      listEl.innerHTML = `<p class="text-sm text-on-surface-variant text-center py-8">Nenhum agendamento para este dia.</p>`;
+      countLabel.textContent = '';
+      return;
+    }
+
+    countLabel.textContent = `${data.length} agendamento${data.length !== 1 ? 's' : ''}`;
+
+    listEl.innerHTML = data.map(item => {
+      const dt = new Date(item.inicio);
+      let hours = dt.getHours();
+      const minutes = String(dt.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const hours12 = hours % 12 || 12;
+      const timeStr = `${String(hours12).padStart(2, '0')}:${minutes}`;
+
+      const pacienteNome = item.paciente_nome || '—';
+      const procedimentoNome = item.procedimento_nome || '—';
+      const badge = statusBadge(item.status);
+
+      return `
+        <div class="flex gap-4 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/10">
+          <div class="flex flex-col items-center justify-center pr-4 border-r border-outline-variant/20 min-w-[60px]">
+            <span class="text-xs font-bold headline-font text-on-surface">${timeStr}</span>
+            <span class="text-[10px] text-on-surface-variant uppercase">${ampm}</span>
+          </div>
+          <div class="flex-1 flex justify-between items-start">
+            <div class="space-y-1">
+              <h4 class="font-bold text-sm text-on-surface">${pacienteNome}</h4>
+              <p class="text-xs text-on-surface-variant">${procedimentoNome}</p>
+              <div class="flex items-center gap-1 mt-2">${badge}</div>
+            </div>
+            <button class="text-outline"><span class="material-symbols-outlined">more_vert</span></button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  (async () => {
+    await checkSession();
+
+    const today = new Date();
+    selectedDate = toYMD(today);
+
+    buildDatePicker(selectedDate);
+    loadMetrics();
+    loadAgendamentos(selectedDate);
+  })();
+</script>
+</body></html>

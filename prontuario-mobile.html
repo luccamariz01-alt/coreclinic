@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Prontuário - Core Clinic</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary-fixed-variant": "#643e5d","tertiary-fixed-dim": "#deadd1","surface-container-lowest": "#ffffff","secondary-container": "#ffdad9","error-container": "#fd795a","secondary-fixed-dim": "#f5caca","secondary": "#775757","primary-fixed-dim": "#ec5f8f","on-secondary": "#fff7f6","surface-bright": "#faf9fa","outline-variant": "#b0b2b5","tertiary-dim": "#6d4665","on-tertiary-fixed": "#44223f","primary": "#ac2d5e","inverse-on-surface": "#9d9d9e","background": "#faf9fa","surface-container": "#edeef0","on-tertiary": "#fff7f9","error": "#a73b21","secondary-dim": "#6a4b4b","on-primary-fixed": "#000000","tertiary-fixed": "#ecbadf","on-error-container": "#6e1400","surface-container-low": "#f3f3f5","on-primary-container": "#47001f","on-background": "#303335","inverse-surface": "#0d0e0f","surface-tint": "#ac2d5e","tertiary-container": "#ecbadf","on-tertiary-container": "#5b3654","surface-variant": "#e1e3e5","on-error": "#fff7f6","on-secondary-fixed-variant": "#735354","surface-container-highest": "#e1e3e5","on-surface": "#303335","surface": "#faf9fa","primary-dim": "#9c1f52","on-secondary-container": "#694a4a","primary-fixed": "#fd6c9c","on-primary-fixed-variant": "#590029","error-dim": "#791903","primary-container": "#fd6c9c","on-primary": "#fff7f7","secondary-fixed": "#ffdad9","tertiary": "#7a5272","inverse-primary": "#fd6c9c","surface-container-high": "#e7e8ea","surface-dim": "#d8dadd","on-secondary-fixed": "#543838","outline": "#787b7d"
+        },
+        "borderRadius": {"DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px"},
+        "fontFamily": {"headline": ["Manrope"],"body": ["Inter"],"label": ["Inter"]}
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { font-family: 'Inter', sans-serif; background-color: #faf9fa; color: #303335; }
+  .headline-font { font-family: 'Manrope', sans-serif; }
+  body { min-height: max(884px, 100dvh); }
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-3">
+<a href="pacientes-mobile.html" class="text-[#ac2d5e] active:scale-95 duration-150">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</a>
+<h1 class="font-['Manrope'] font-bold tracking-tight text-xl text-[#ac2d5e]">Prontuário</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#303335] active:scale-95 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="px-6 space-y-8 mt-4">
+<!-- Profile Header -->
+<section class="flex flex-col items-center">
+<div class="relative group">
+<div class="w-24 h-24 rounded-full bg-primary-container/20 border-4 border-surface-container-lowest shadow-lg flex items-center justify-center text-primary text-3xl font-bold headline-font" id="patient-avatar">
+—
+</div>
+<div class="absolute bottom-0 right-0 bg-primary-container p-1.5 rounded-full border-2 border-surface shadow-sm">
+<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="text-center mt-4">
+<h2 class="headline-font font-extrabold text-2xl tracking-tight" id="patient-name">Carregando...</h2>
+<p class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-medium mt-1" id="patient-id">ID: #—</p>
+</div>
+</section>
+<!-- Quick Summary Bento Grid -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-[0px_12px_32px_rgba(48,51,53,0.06)] flex flex-col justify-between">
+<div>
+<span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">Faturamento Total</span>
+<p class="headline-font text-lg font-bold mt-1" id="faturamento-total">R$ —</p>
+</div>
+<div class="mt-4 flex items-center text-xs text-primary font-medium">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+<span id="patient-tier">Premium</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl flex flex-col justify-between">
+<div>
+<span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">Último Procedimento</span>
+<p class="headline-font text-lg font-bold mt-1 truncate" id="ultimo-procedimento">—</p>
+</div>
+<div class="mt-4 flex items-center text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm mr-1">calendar_today</span>
+<span id="ultima-data">—</span>
+</div>
+</div>
+</section>
+<!-- Action Button -->
+<section>
+<a href="agenda-mobile.html" class="w-full bg-gradient-to-br from-primary to-primary-container text-white py-4 px-6 rounded-full font-headline font-bold text-sm tracking-wide shadow-[0px_12px_32px_rgba(172,45,94,0.15)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+NOVO AGENDAMENTO
+</a>
+</section>
+<!-- Timeline -->
+<section class="space-y-6">
+<div class="flex justify-between items-end">
+<h3 class="headline-font font-bold text-lg">Histórico de Consultas</h3>
+<span class="font-label text-[10px] uppercase tracking-widest text-primary font-bold">Ver Todos</span>
+</div>
+<div class="space-y-4" id="timeline-list">
+<div class="animate-pulse bg-surface-container-lowest rounded-xl h-24"></div>
+<div class="animate-pulse bg-surface-container-lowest rounded-xl h-24"></div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-transform active:scale-90 duration-200 p-2 rounded-xl" href="dashboard-mobile.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-transform active:scale-90 duration-200 p-2 rounded-xl" href="agenda-mobile.html">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Agenda</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#f3f3f5] text-[#ac2d5e] rounded-[1rem] px-4 py-1.5 transition-transform active:scale-90 duration-200" href="pacientes-mobile.html">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Pacientes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-transform active:scale-90 duration-200 p-2 rounded-xl" href="procedimentos-mobile.html">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Procedimentos</span>
+</a>
+</nav>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function formatCurrency(value) {
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function formatDateShort(dateStr) {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
+  }
+
+  function formatDateFull(dateStr) {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
+  }
+
+  function getInitials(nome) {
+    if (!nome) return '—';
+    const parts = nome.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  function getStatusBadgeClass(status) {
+    if (status === 'concluido') {
+      return 'bg-tertiary-container text-on-tertiary-container text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider';
+    } else if (status === 'cancelado') {
+      return 'bg-error-container/30 text-error text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider';
+    } else {
+      return 'bg-surface-container text-on-surface-variant text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider';
+    }
+  }
+
+  function getStatusLabel(status) {
+    const labels = {
+      concluido: 'Concluído',
+      cancelado: 'Cancelado',
+      agendado: 'Agendado',
+      confirmado: 'Confirmado',
+      em_andamento: 'Em andamento',
+    };
+    return labels[status] || status;
+  }
+
+  function renderTimeline(agendamentos, pagamentosMap) {
+    const container = document.getElementById('timeline-list');
+
+    if (!agendamentos || agendamentos.length === 0) {
+      container.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-8">Nenhuma consulta registrada.</p>';
+      return;
+    }
+
+    const dotConcluido = 'w-2 h-2 rounded-full bg-primary mt-2';
+    const dotOther = 'w-2 h-2 rounded-full bg-outline-variant mt-2';
+
+    container.innerHTML = agendamentos.map(ag => {
+      const isConcluido = ag.status === 'concluido';
+      const dotClass = isConcluido ? dotConcluido : dotOther;
+      const badgeClass = getStatusBadgeClass(ag.status);
+      const statusLabel = getStatusLabel(ag.status);
+      const dateFull = formatDateFull(ag.inicio);
+      const valor = pagamentosMap[ag.id] !== undefined
+        ? `R$ ${Number(pagamentosMap[ag.id]).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : '—';
+      const procedimentoNome = ag.procedimento_nome || '—';
+
+      return `
+        <div class="flex gap-4">
+          <div class="flex flex-col items-center">
+            <div class="${dotClass}"></div>
+            <div class="w-0.5 h-full bg-surface-container"></div>
+          </div>
+          <div class="bg-surface-container-lowest p-4 rounded-xl flex-1 shadow-[0px_12px_32px_rgba(48,51,53,0.06)] mb-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="headline-font font-bold text-sm">${procedimentoNome}</p>
+                <p class="font-body text-xs text-on-surface-variant mt-0.5">${statusLabel}</p>
+              </div>
+              <span class="${badgeClass}">${statusLabel}</span>
+            </div>
+            <div class="mt-3 flex gap-4">
+              <div class="flex items-center gap-1 text-[10px] text-on-surface-variant">
+                <span class="material-symbols-outlined text-xs">history</span>
+                ${dateFull}
+              </div>
+              <div class="flex items-center gap-1 text-[10px] text-on-surface-variant">
+                <span class="material-symbols-outlined text-xs">payments</span>
+                ${valor}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function init() {
+    // 1. Check session
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login-mobile.html';
+      return;
+    }
+
+    // 2. Get patient ID from URL
+    const params = new URLSearchParams(window.location.search);
+    const patientId = params.get('id');
+    if (!patientId) {
+      window.location.href = 'pacientes-mobile.html';
+      return;
+    }
+
+    // 3. Load patient
+    const { data: patient, error: patientError } = await _supabase
+      .from('pacientes')
+      .select('*')
+      .eq('id', patientId)
+      .single();
+
+    if (patientError || !patient) {
+      window.location.href = 'pacientes-mobile.html';
+      return;
+    }
+
+    // 4. Load appointments
+    const { data: agendamentos } = await _supabase
+      .from('agendamentos')
+      .select('*')
+      .eq('paciente_id', patientId)
+      .order('inicio', { ascending: false });
+
+    const agendamentosList = agendamentos || [];
+
+    // 5. Load payments
+    let pagamentos = [];
+    if (agendamentosList.length > 0) {
+      const ids = agendamentosList.map(a => a.id);
+      const { data: pags } = await _supabase
+        .from('pagamentos')
+        .select('valor, status, agendamento_id')
+        .in('agendamento_id', ids);
+      pagamentos = pags || [];
+    }
+
+    // 6. Calculate faturamento total (only paid)
+    const faturamentoTotal = pagamentos
+      .filter(p => p.status === 'pago')
+      .reduce((sum, p) => sum + Number(p.valor || 0), 0);
+
+    // Build a map agendamento_id -> valor_cobrado (first payment found)
+    const pagamentosMap = {};
+    pagamentos.forEach(p => {
+      if (pagamentosMap[p.agendamento_id] === undefined) {
+        pagamentosMap[p.agendamento_id] = p.valor;
+      }
+    });
+
+    // 7. Update DOM
+    const initials = getInitials(patient.nome);
+    document.getElementById('patient-avatar').textContent = initials;
+    document.getElementById('patient-name').textContent = patient.nome || '—';
+    document.getElementById('patient-id').textContent = `#${patient.id.substring(0, 8).toUpperCase()}-PR`;
+    document.getElementById('faturamento-total').textContent = formatCurrency(faturamentoTotal);
+    document.getElementById('patient-tier').textContent = faturamentoTotal > 2000 ? 'Premium' : 'Regular';
+
+    const ultimoAg = agendamentosList[0];
+    document.getElementById('ultimo-procedimento').textContent = ultimoAg?.procedimento_nome || '—';
+    document.getElementById('ultima-data').textContent = ultimoAg ? formatDateShort(ultimoAg.inicio) : '—';
+
+    // 8. Render timeline
+    renderTimeline(agendamentosList, pagamentosMap);
+  }
+
+  init();
+</script>
+</body></html>

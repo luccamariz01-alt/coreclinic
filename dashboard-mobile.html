@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Clinic Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary-fixed-variant": "#643e5d","tertiary-fixed-dim": "#deadd1","surface-container-lowest": "#ffffff","secondary-container": "#ffdad9","error-container": "#fd795a","secondary-fixed-dim": "#f5caca","secondary": "#775757","primary-fixed-dim": "#ec5f8f","on-secondary": "#fff7f6","surface-bright": "#faf9fa","outline-variant": "#b0b2b5","tertiary-dim": "#6d4665","on-tertiary-fixed": "#44223f","primary": "#ac2d5e","inverse-on-surface": "#9d9d9e","background": "#faf9fa","surface-container": "#edeef0","on-tertiary": "#fff7f9","error": "#a73b21","secondary-dim": "#6a4b4b","on-primary-fixed": "#000000","tertiary-fixed": "#ecbadf","on-error-container": "#6e1400","surface-container-low": "#f3f3f5","on-primary-container": "#47001f","on-background": "#303335","inverse-surface": "#0d0e0f","surface-tint": "#ac2d5e","tertiary-container": "#ecbadf","on-tertiary-container": "#5b3654","surface-variant": "#e1e3e5","on-error": "#fff7f6","on-surface-variant": "#5c5f62","on-secondary-fixed-variant": "#735354","surface-container-highest": "#e1e3e5","on-surface": "#303335","surface": "#faf9fa","primary-dim": "#9c1f52","on-secondary-container": "#694a4a","primary-fixed": "#fd6c9c","on-primary-fixed-variant": "#590029","error-dim": "#791903","primary-container": "#fd6c9c","on-primary": "#fff7f7","secondary-fixed": "#ffdad9","tertiary": "#7a5272","inverse-primary": "#fd6c9c","surface-container-high": "#e7e8ea","surface-dim": "#d8dadd","on-secondary-fixed": "#543838","outline": "#787b7d"
+        },
+        "borderRadius": {"DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px"},
+        "fontFamily": {"headline": ["Manrope"],"body": ["Inter"],"label": ["Inter"]}
+      },
+    },
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .editorial-shadow { box-shadow: 0px 12px 32px rgba(48, 51, 53, 0.06); }
+  .primary-gradient { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
+  body { min-height: max(884px, 100dvh); }
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#ac2d5e]">bubble_chart</span>
+<h1 class="text-xl font-extrabold text-[#ac2d5e] font-['Manrope'] tracking-tight">Core Clinic</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#303335] active:scale-95 duration-150 transition-opacity hover:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="px-6 pt-4 pb-32">
+<!-- Dashboard Intro -->
+<section class="mb-8">
+<p class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-1">Visão Geral</p>
+<h2 class="font-headline text-3xl font-bold tracking-tight text-on-surface">Dashboard</h2>
+</section>
+<!-- Filters Section -->
+<section class="flex gap-2 mb-8 overflow-x-auto no-scrollbar">
+<button class="px-6 py-2.5 rounded-full primary-gradient text-on-primary text-sm font-semibold editorial-shadow">Hoje</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-low text-on-surface-variant text-sm font-medium">Semana</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-low text-on-surface-variant text-sm font-medium">Mês</button>
+</section>
+<!-- Metrics -->
+<section class="grid grid-cols-1 gap-4 mb-10">
+<!-- Card Agendamentos -->
+<div class="bg-surface-container-lowest p-6 rounded-xl editorial-shadow border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-tertiary-container/30 rounded-lg">
+<span class="material-symbols-outlined text-tertiary">event_available</span>
+</div>
+<span class="text-xs font-bold text-primary flex items-center gap-1 bg-primary-container/20 px-2 py-1 rounded-full" id="agendamentos-badge">
+<span class="material-symbols-outlined text-[14px]" id="agendamentos-badge-icon">trending_up</span>
+<span id="agendamentos-badge-text">...</span>
+</span>
+</div>
+<h3 class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Agendamentos</h3>
+<p class="text-3xl font-headline font-extrabold text-on-surface" id="metric-agendamentos">—</p>
+</div>
+<!-- Card Faturamento -->
+<div class="bg-surface-container-lowest p-6 rounded-xl editorial-shadow border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+<span class="text-xs font-bold text-primary flex items-center gap-1 bg-primary-container/20 px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+Mês
+</span>
+</div>
+<h3 class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Faturamento</h3>
+<p class="text-3xl font-headline font-extrabold text-on-surface" id="metric-faturamento">R$ —</p>
+</div>
+<!-- Card Taxa de Reaparição -->
+<div class="bg-surface-container-lowest p-6 rounded-xl editorial-shadow border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-secondary-container/30 rounded-lg">
+<span class="material-symbols-outlined text-secondary">person_play</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded-full">Estável</span>
+</div>
+<h3 class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Taxa de Reaparição</h3>
+<div class="flex items-end gap-3">
+<p class="text-3xl font-headline font-extrabold text-on-surface" id="metric-taxa">—%</p>
+<div class="w-full h-2 bg-surface-container-highest rounded-full mb-2 overflow-hidden">
+<div class="h-full primary-gradient transition-all duration-700" id="taxa-bar" style="width: 0%;"></div>
+</div>
+</div>
+</div>
+<!-- Card Ticket Médio -->
+<div class="bg-surface-container-lowest p-6 rounded-xl editorial-shadow border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-outline-variant/20 rounded-lg">
+<span class="material-symbols-outlined text-on-surface-variant">analytics</span>
+</div>
+</div>
+<h3 class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Ticket Médio</h3>
+<p class="text-3xl font-headline font-extrabold text-on-surface" id="metric-ticket">R$ —</p>
+</div>
+</section>
+<!-- Agenda de Hoje -->
+<section>
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline text-xl font-bold text-on-surface tracking-tight">Agenda de Hoje</h2>
+<a href="agenda-mobile.html" class="text-primary text-sm font-semibold px-4 py-2">Ver todos</a>
+</div>
+<div class="space-y-4" id="agenda-hoje-list">
+<!-- Skeleton loaders -->
+<div class="animate-pulse bg-surface-container-lowest p-4 rounded-xl h-16"></div>
+<div class="animate-pulse bg-surface-container-lowest p-4 rounded-xl h-16"></div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<a class="flex flex-col items-center justify-center bg-[#f3f3f5] text-[#ac2d5e] rounded-[1rem] px-4 py-1.5 active:scale-90 transition-transform duration-200" href="dashboard-mobile.html">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-colors px-4 py-1.5 rounded-[1rem] active:scale-90 duration-200" href="agenda-mobile.html">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Agenda</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-colors px-4 py-1.5 rounded-[1rem] active:scale-90 duration-200" href="pacientes-mobile.html">
+<span class="material-symbols-outlined">group</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Pacientes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-colors px-4 py-1.5 rounded-[1rem] active:scale-90 duration-200" href="procedimentos-mobile.html">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Procedimentos</span>
+</a>
+</nav>
+<!-- FAB -->
+<a href="agenda-mobile.html" class="fixed right-6 bottom-24 w-14 h-14 primary-gradient text-on-primary rounded-full editorial-shadow flex items-center justify-center active:scale-95 transition-transform z-40">
+<span class="material-symbols-outlined">add</span>
+</a>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Currency formatter
+  function formatBRL(value) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+  }
+
+  // Format time to HH:MM and AM/PM
+  function formatTime(datetimeStr) {
+    const date = new Date(datetimeStr);
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHour = (hours % 12 || 12).toString().padStart(2, '0');
+    return { time: `${displayHour}:${minutes}`, ampm };
+  }
+
+  // Get month date range helpers
+  function getMonthRange(date) {
+    const start = new Date(date.getFullYear(), date.getMonth(), 1);
+    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+    return {
+      start: start.toISOString(),
+      end: end.toISOString()
+    };
+  }
+
+  function getTodayRange() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return {
+      start: start.toISOString(),
+      end: end.toISOString()
+    };
+  }
+
+  // Fetch metric: agendamentos this month vs last month
+  async function fetchAgendamentos() {
+    const now = new Date();
+    const thisMonth = getMonthRange(now);
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonth = getMonthRange(lastMonthDate);
+
+    const [{ count: thisCount }, { count: lastCount }] = await Promise.all([
+      supabase
+        .from('agendamentos')
+        .select('*', { count: 'exact', head: true })
+        .gte('data_hora', thisMonth.start)
+        .lte('data_hora', thisMonth.end),
+      supabase
+        .from('agendamentos')
+        .select('*', { count: 'exact', head: true })
+        .gte('data_hora', lastMonth.start)
+        .lte('data_hora', lastMonth.end)
+    ]);
+
+    return { thisCount: thisCount || 0, lastCount: lastCount || 0 };
+  }
+
+  // Fetch metric: faturamento this month (pagamentos.valor where status='pago')
+  async function fetchFaturamento() {
+    const { start, end } = getMonthRange(new Date());
+    const { data, error } = await supabase
+      .from('pagamentos')
+      .select('valor')
+      .eq('status', 'pago')
+      .gte('created_at', start)
+      .lte('created_at', end);
+
+    if (error || !data) return 0;
+    return data.reduce((sum, row) => sum + (parseFloat(row.valor) || 0), 0);
+  }
+
+  // Fetch metric: taxa de reaparição (patients with > 1 appointment / total unique patients * 100)
+  async function fetchTaxaReaparicao() {
+    const { data, error } = await supabase
+      .from('agendamentos')
+      .select('paciente_id');
+
+    if (error || !data || data.length === 0) return 0;
+
+    const counts = {};
+    for (const row of data) {
+      if (!row.paciente_id) continue;
+      counts[row.paciente_id] = (counts[row.paciente_id] || 0) + 1;
+    }
+
+    const totalUnique = Object.keys(counts).length;
+    if (totalUnique === 0) return 0;
+
+    const returning = Object.values(counts).filter(c => c > 1).length;
+    return Math.round((returning / totalUnique) * 100);
+  }
+
+  // Fetch metric: ticket médio (avg valor_cobrado from agendamentos with status='concluido')
+  async function fetchTicketMedio() {
+    const { data, error } = await supabase
+      .from('agendamentos')
+      .select('valor_cobrado')
+      .eq('status', 'concluido');
+
+    if (error || !data || data.length === 0) return 0;
+
+    const values = data
+      .map(r => parseFloat(r.valor_cobrado))
+      .filter(v => !isNaN(v) && v > 0);
+
+    if (values.length === 0) return 0;
+    return values.reduce((a, b) => a + b, 0) / values.length;
+  }
+
+  // Fetch today's agenda (up to 5 appointments)
+  async function fetchAgendaHoje() {
+    const { start, end } = getTodayRange();
+    const { data, error } = await supabase
+      .from('agendamentos')
+      .select('id, data_hora, paciente_nome, procedimento_nome, paciente_id')
+      .gte('data_hora', start)
+      .lte('data_hora', end)
+      .order('data_hora', { ascending: true })
+      .limit(5);
+
+    if (error) return [];
+    return data || [];
+  }
+
+  // Render agenda list
+  function renderAgenda(appointments) {
+    const container = document.getElementById('agenda-hoje-list');
+    container.innerHTML = '';
+
+    if (!appointments || appointments.length === 0) {
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-10 text-center">
+          <div class="p-4 bg-surface-container-low rounded-full mb-3">
+            <span class="material-symbols-outlined text-outline text-3xl">event_busy</span>
+          </div>
+          <p class="text-sm font-semibold text-on-surface-variant">Nenhum agendamento para hoje</p>
+          <p class="text-xs text-outline mt-1">Aproveite para relaxar!</p>
+        </div>
+      `;
+      return;
+    }
+
+    for (const appt of appointments) {
+      const { time, ampm } = formatTime(appt.data_hora);
+      const pacienteNome = appt.paciente_nome || 'Paciente';
+      const procedimentoNome = appt.procedimento_nome || 'Procedimento';
+      const pacienteId = appt.paciente_id || '';
+
+      const card = document.createElement('a');
+      card.href = pacienteId
+        ? `pacientes-mobile.html?id=${encodeURIComponent(pacienteId)}`
+        : 'pacientes-mobile.html';
+      card.className = 'bg-surface-container-lowest p-4 rounded-xl editorial-shadow flex items-center gap-4 active:scale-95 transition-transform duration-150 block';
+
+      card.innerHTML = `
+        <div class="flex flex-col items-center justify-center bg-surface-container-low rounded-lg py-2 px-3 min-w-[60px]">
+          <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">${time}</span>
+          <span class="text-lg font-bold text-primary">${ampm}</span>
+        </div>
+        <div class="flex-1">
+          <h4 class="font-bold text-on-surface leading-tight">${pacienteNome}</h4>
+          <p class="text-xs text-on-surface-variant">${procedimentoNome}</p>
+        </div>
+        <span class="material-symbols-outlined text-outline text-base">chevron_right</span>
+      `;
+
+      container.appendChild(card);
+    }
+  }
+
+  // Main init
+  (async () => {
+    // Session check
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = 'login-mobile.html';
+      return;
+    }
+
+    // Load all metrics and agenda in parallel
+    const [agendamentosData, faturamento, taxa, ticket, agendaHoje] = await Promise.all([
+      fetchAgendamentos(),
+      fetchFaturamento(),
+      fetchTaxaReaparicao(),
+      fetchTicketMedio(),
+      fetchAgendaHoje()
+    ]);
+
+    // Update agendamentos card
+    document.getElementById('metric-agendamentos').textContent = agendamentosData.thisCount;
+    const badgeText = document.getElementById('agendamentos-badge-text');
+    const badgeIcon = document.getElementById('agendamentos-badge-icon');
+    const lastCount = agendamentosData.lastCount;
+    const thisCount = agendamentosData.thisCount;
+
+    if (lastCount > 0) {
+      const diff = ((thisCount - lastCount) / lastCount) * 100;
+      const sign = diff >= 0 ? '+' : '';
+      badgeText.textContent = `${sign}${Math.round(diff)}%`;
+      badgeIcon.textContent = diff >= 0 ? 'trending_up' : 'trending_down';
+    } else if (thisCount > 0) {
+      badgeText.textContent = 'Novo';
+      badgeIcon.textContent = 'trending_up';
+    } else {
+      badgeText.textContent = '0%';
+      badgeIcon.textContent = 'trending_flat';
+    }
+
+    // Update faturamento card
+    document.getElementById('metric-faturamento').textContent = formatBRL(faturamento);
+
+    // Update taxa de reaparição card
+    document.getElementById('metric-taxa').textContent = `${taxa}%`;
+    document.getElementById('taxa-bar').style.width = `${Math.min(taxa, 100)}%`;
+
+    // Update ticket médio card
+    document.getElementById('metric-ticket').textContent = formatBRL(ticket);
+
+    // Render agenda
+    renderAgenda(agendaHoje);
+  })();
+</script>
+</body></html>
