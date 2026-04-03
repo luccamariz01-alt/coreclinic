@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent))window.location.replace('procedimento-detalhe-mobile.html'+window.location.search);</script>
+<title>Core Clinic — Detalhe do Procedimento</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-surface-variant":"#5c5f62","surface-variant":"#e1e3e5","on-surface":"#303335","surface-container":"#edeef0","secondary-container":"#ffdad9","background":"#faf9fa","on-tertiary-container":"#5b3654","tertiary-container":"#ecbadf","surface-container-low":"#f3f3f5","on-primary":"#fff7f7","on-primary-container":"#47001f","surface-container-highest":"#e1e3e5","error":"#a73b21","outline":"#787b7d","surface-container-high":"#e7e8ea","primary-container":"#fd6c9c","primary-fixed":"#fd6c9c","on-primary-fixed-variant":"#590029","surface-bright":"#faf9fa","on-secondary":"#fff7f6","outline-variant":"#b0b2b5","secondary":"#775757","primary-dim":"#9c1f52","primary":"#ac2d5e","surface":"#faf9fa","tertiary":"#7a5272","surface-container-lowest":"#ffffff","on-tertiary":"#fff7f9","primary-fixed-dim":"#ec5f8f","secondary-fixed":"#ffdad9","error-container":"#fd795a","on-error":"#fff7f6"
+        },
+        fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; vertical-align: middle; }
+  .btn-gradient { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
+</style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#f3f3f5] font-['Manrope'] text-sm font-medium z-50">
+  <div class="flex flex-col h-full p-4 gap-2">
+    <div class="px-4 py-8 mb-4">
+      <h1 class="text-lg font-extrabold text-[#ac2d5e]">Core Clinic</h1>
+      <p class="text-xs text-on-surface-variant/70">Gestão Médica</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] hover:translate-x-1 transition-transform duration-200" href="dashboard.html">
+        <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] hover:translate-x-1 transition-transform duration-200" href="agenda.html">
+        <span class="material-symbols-outlined">calendar_today</span><span>Agenda</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] hover:translate-x-1 transition-transform duration-200" href="pacientes.html">
+        <span class="material-symbols-outlined">group</span><span>Pacientes</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 bg-[#ffffff] text-[#ac2d5e] rounded-lg shadow-sm scale-95 transition-all" href="procedimentos.html">
+        <span class="material-symbols-outlined">medical_services</span><span>Procedimentos</span>
+      </a>
+    </nav>
+    <div class="mt-auto pt-4 border-t border-outline-variant/10">
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] transition-colors" href="#">
+        <span class="material-symbols-outlined">help</span><span>Suporte</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] transition-colors cursor-pointer" href="#" data-action="logout">
+        <span class="material-symbols-outlined">logout</span><span>Sair</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<main class="ml-64 min-h-screen bg-surface">
+  <!-- Header -->
+  <div class="px-12 py-10 max-w-7xl mx-auto">
+    <header class="mb-10 flex justify-between items-end">
+      <div>
+        <a href="procedimentos.html" class="flex items-center gap-2 text-primary-dim mb-2 hover:opacity-70 transition-opacity">
+          <span class="material-symbols-outlined text-sm">arrow_back</span>
+          <span class="text-xs font-bold uppercase tracking-widest font-label">Voltar aos Procedimentos</span>
+        </a>
+        <h1 class="text-4xl font-headline font-extrabold text-on-surface tracking-tight" id="page-title">Editar Procedimento</h1>
+      </div>
+      <div class="flex gap-4 items-center">
+        <!-- Toast de feedback -->
+        <span id="toast" class="hidden text-sm font-medium px-4 py-2 rounded-full"></span>
+        <a href="procedimentos.html" class="px-8 py-3 rounded-full bg-surface-container-highest text-on-surface font-medium hover:bg-surface-container-high transition-all active:scale-95">
+          Cancelar
+        </a>
+        <button id="btn-salvar" onclick="salvar()" class="px-8 py-3 rounded-full btn-gradient text-on-primary font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">
+          Salvar Alterações
+        </button>
+      </div>
+    </header>
+
+    <!-- Form Layout -->
+    <div class="grid grid-cols-12 gap-8">
+      <!-- Left Column -->
+      <div class="col-span-12 lg:col-span-4 space-y-8">
+        <!-- Image Upload Card -->
+        <div class="bg-surface-container-lowest rounded-xl p-8">
+          <span class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-6 font-label">Imagem do Procedimento</span>
+          <div class="relative group cursor-pointer" onclick="document.getElementById('input-imagem').click()">
+            <div class="aspect-square rounded-xl overflow-hidden mb-4 bg-surface-container-low">
+              <img id="preview-imagem" alt="Imagem do Procedimento" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src=""/>
+            </div>
+            <div class="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
+              <div class="flex flex-col items-center text-white">
+                <span class="material-symbols-outlined text-3xl mb-2">upload</span>
+                <span class="font-bold">Alterar Foto</span>
+              </div>
+            </div>
+          </div>
+          <input type="file" id="input-imagem" accept="image/*" class="hidden" onchange="previewImagem(this)"/>
+          <p class="text-xs text-center text-on-surface-variant leading-relaxed">
+            Recomendado: 800x800px.<br/>Formatos: JPG, PNG ou WEBP.
+          </p>
+          <p class="text-[10px] text-center text-primary mt-2 font-medium" id="imagem-status"></p>
+        </div>
+
+        <!-- Price & Duration -->
+        <div class="bg-surface-container-lowest rounded-xl p-8 space-y-6">
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3 font-label">Preço Base (R$)</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-medium">R$</span>
+              <input id="campo-valor" class="w-full bg-surface-container-low border-none rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all font-medium text-lg" type="text" placeholder="0,00"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3 font-label">Duração Estimada</label>
+            <div class="relative">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-medium">min</span>
+              <input id="campo-duracao" class="w-full bg-surface-container-low border-none rounded-xl py-4 px-4 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all font-medium text-lg" type="number" placeholder="0"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="col-span-12 lg:col-span-8 space-y-8">
+        <!-- Main Info -->
+        <div class="bg-surface-container-lowest rounded-xl p-8 space-y-8">
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3 font-label">Nome do Procedimento</label>
+            <input id="campo-nome" class="w-full bg-surface-container-low border-none rounded-xl py-4 px-6 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all font-headline font-bold text-2xl text-on-surface" type="text" placeholder="Nome do procedimento"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3 font-label">Categoria</label>
+            <select id="campo-categoria" class="w-full bg-surface-container-low border-none rounded-xl py-4 px-6 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all text-on-surface">
+              <option value="">Selecionar categoria...</option>
+              <option value="Estética Facial">Estética Facial</option>
+              <option value="Injetáveis">Injetáveis</option>
+              <option value="Renovação">Renovação</option>
+              <option value="Harmonização">Harmonização</option>
+              <option value="Corporal">Corporal</option>
+              <option value="Capilar">Capilar</option>
+              <option value="Geral">Geral</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3 font-label">Sobre o Procedimento</label>
+            <textarea id="campo-descricao" class="w-full bg-surface-container-low border-none rounded-xl py-4 px-6 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all leading-relaxed text-on-surface-variant" rows="6" placeholder="Descreva o procedimento..."></textarea>
+          </div>
+        </div>
+
+        <!-- Extra Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="bg-surface-container-lowest rounded-xl p-8">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
+                <span class="material-symbols-outlined">checklist</span>
+              </div>
+              <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest font-label">Características</label>
+            </div>
+            <textarea id="campo-caracteristicas" class="w-full bg-surface-container-low border-none rounded-xl py-4 px-6 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all text-sm" rows="4" placeholder="Liste as características do procedimento..."></textarea>
+          </div>
+          <div class="bg-surface-container-lowest rounded-xl p-8">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-primary-fixed/20 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined">health_and_safety</span>
+              </div>
+              <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest font-label">Preparação</label>
+            </div>
+            <textarea id="campo-preparacao" class="w-full bg-surface-container-low border-none rounded-xl py-4 px-6 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all text-sm" rows="4" placeholder="Instruções de preparação..."></textarea>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-lowest rounded-xl p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
+              <span class="material-symbols-outlined">verified_user</span>
+            </div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-widest font-label">Cuidados Pós-Procedimento</label>
+          </div>
+          <textarea id="campo-cuidados-pos" class="w-full bg-surface-container-low border-none rounded-xl py-4 px-6 focus:ring-2 focus:ring-primary-fixed-dim/30 focus:bg-surface-container-lowest transition-all text-sm" rows="4" placeholder="Cuidados após o procedimento..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const params = new URLSearchParams(window.location.search);
+  const procedimentoId = params.get('id');
+  let arquivoImagem = null;
+  const imgPadrao = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCB6Vnpn5-GpXY4X2ItYvcu2fsFzdW2ZgsnVCUq06MVignpb4H2A3br__pc7ZQHiOl8eBbJBpRH3IJqZg86afvAHX5yy4BX6upDb6IsukePfexhApcpP_DuDv8B0wj2HYCaE5-zLC2bOOHcaQ2TEXjzTrpbNvrKT2C6sS1q-HKCMJ9SgcpBAYuQk2nMJPh2c5Ou9AC4JXWpfYWsnD2PGW4PMmsCTqKXWrccM3nofUZulRCXlLdNJFGnztTTSmVp6CMuFZZ_8i2aNcSd';
+
+  function mostrarToast(msg, tipo) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `text-sm font-medium px-4 py-2 rounded-full ${tipo === 'ok' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3000);
+  }
+
+  function previewImagem(input) {
+    if (!input.files || !input.files[0]) return;
+    arquivoImagem = input.files[0];
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('preview-imagem').src = e.target.result;
+      document.getElementById('imagem-status').textContent = 'Nova imagem selecionada (salve para confirmar)';
+    };
+    reader.readAsDataURL(arquivoImagem);
+  }
+
+  async function uploadImagem(procedimentoId) {
+    if (!arquivoImagem) return null;
+    const ext = arquivoImagem.name.split('.').pop();
+    const path = `procedimentos/${procedimentoId}.${ext}`;
+    const { error } = await _supabase.storage
+      .from('procedimentos-imagens')
+      .upload(path, arquivoImagem, { upsert: true, contentType: arquivoImagem.type });
+    if (error) throw new Error('Erro ao fazer upload da imagem: ' + error.message);
+    const { data } = _supabase.storage.from('procedimentos-imagens').getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async function carregarProcedimento() {
+    if (!procedimentoId) {
+      document.getElementById('page-title').textContent = 'Novo Procedimento';
+      document.getElementById('preview-imagem').src = imgPadrao;
+      return;
+    }
+
+    const { data, error } = await _supabase
+      .from('procedimentos')
+      .select('*')
+      .eq('id', procedimentoId)
+      .single();
+
+    if (error || !data) {
+      mostrarToast('Procedimento não encontrado.', 'erro');
+      return;
+    }
+
+    document.getElementById('campo-nome').value = data.nome || '';
+    document.getElementById('campo-descricao').value = data.descricao || '';
+    document.getElementById('campo-valor').value = data.valor != null ? Number(data.valor).toFixed(2).replace('.', ',') : '';
+    document.getElementById('campo-duracao').value = data.duracao_minutos || '';
+    document.getElementById('campo-categoria').value = data.categoria || '';
+    document.getElementById('campo-caracteristicas').value = data.caracteristicas || '';
+    document.getElementById('campo-preparacao').value = data.preparacao || '';
+    document.getElementById('campo-cuidados-pos').value = data.cuidados_pos || '';
+    document.getElementById('preview-imagem').src = data.imagem_url || imgPadrao;
+  }
+
+  async function salvar() {
+    const btn = document.getElementById('btn-salvar');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    try {
+      let imagemUrl = null;
+
+      const valorStr = document.getElementById('campo-valor').value.replace('.', '').replace(',', '.');
+      const payload = {
+        nome: document.getElementById('campo-nome').value.trim(),
+        descricao: document.getElementById('campo-descricao').value.trim(),
+        valor: parseFloat(valorStr) || 0,
+        duracao_minutos: parseInt(document.getElementById('campo-duracao').value) || 0,
+        categoria: document.getElementById('campo-categoria').value,
+        caracteristicas: document.getElementById('campo-caracteristicas').value.trim(),
+        preparacao: document.getElementById('campo-preparacao').value.trim(),
+        cuidados_pos: document.getElementById('campo-cuidados-pos').value.trim(),
+      };
+
+      if (!payload.nome) {
+        mostrarToast('O nome do procedimento é obrigatório.', 'erro');
+        return;
+      }
+
+      let id = procedimentoId;
+
+      if (id) {
+        // Upload imagem se houver nova
+        if (arquivoImagem) {
+          imagemUrl = await uploadImagem(id);
+          payload.imagem_url = imagemUrl;
+        }
+        const { error } = await _supabase.from('procedimentos').update(payload).eq('id', id);
+        if (error) throw error;
+      } else {
+        // Novo procedimento: inserir primeiro para ter ID, depois fazer upload
+        const { data: inserted, error } = await _supabase.from('procedimentos').insert({ ...payload, ativo: true }).select().single();
+        if (error) throw error;
+        id = inserted.id;
+        if (arquivoImagem) {
+          imagemUrl = await uploadImagem(id);
+          await _supabase.from('procedimentos').update({ imagem_url: imagemUrl }).eq('id', id);
+        }
+      }
+
+      mostrarToast('Procedimento salvo com sucesso!', 'ok');
+      setTimeout(() => window.location.href = `procedimento-detalhe.html?id=${id}`, 1500);
+    } catch (err) {
+      mostrarToast('Erro ao salvar: ' + err.message, 'erro');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salvar Alterações';
+    }
+  }
+
+  (async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    await carregarProcedimento();
+  })();
+
+  document.querySelectorAll('[data-action="logout"]').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await _supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+  });
+</script>
+</body>
+</html>
