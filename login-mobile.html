@@ -170,7 +170,10 @@ Ainda não tem uma conta?
       submitBtn.disabled = false;
       submitBtn.textContent = 'Acessar Dashboard';
     } else {
-      window.location.href = 'dashboard-mobile.html';
+      showToast('Login realizado! Redirecionando…', 'success');
+      setTimeout(() => {
+        window.location.href = 'dashboard-mobile.html';
+      }, 1000);
     }
   });
 </script>
