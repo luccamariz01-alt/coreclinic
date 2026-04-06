@@ -276,7 +276,11 @@
   }
 
   (async () => {
-    const { data: { session } } = await _supabase.auth.getSession();
+    const session = await new Promise((resolve) => {
+      const { data: { subscription } } = _supabase.auth.onAuthStateChange((event, sess) => {
+        if (event === 'INITIAL_SESSION') { subscription.unsubscribe(); resolve(sess); }
+      });
+    });
     if (!session) { window.location.href = 'login-mobile.html'; return; }
     await carregarProcedimento();
   })();

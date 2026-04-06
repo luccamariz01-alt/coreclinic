@@ -127,7 +127,11 @@
 
   // ── Session check ──────────────────────────────────────────────────────────
   async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const session = await new Promise((resolve) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+        if (event === 'INITIAL_SESSION') { subscription.unsubscribe(); resolve(sess); }
+      });
+    });
     if (!session) {
       window.location.href = 'login-mobile.html';
     }

@@ -326,8 +326,15 @@ Mês
 
   // Main init
   (async () => {
-    // Session check
-    const { data: { session } } = await supabase.auth.getSession();
+    // Session check — aguarda INITIAL_SESSION para garantir que o storage foi lido
+    const session = await new Promise((resolve) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+        if (event === 'INITIAL_SESSION') {
+          subscription.unsubscribe();
+          resolve(sess);
+        }
+      });
+    });
     if (!session) {
       window.location.href = 'login-mobile.html';
       return;
