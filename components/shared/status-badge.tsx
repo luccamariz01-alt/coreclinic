@@ -59,8 +59,8 @@ type StatusBadgeProps =
     };
 
 export function StatusBadge(props: StatusBadgeProps) {
-  if ("status" in props) {
-    const config = statusMap[props.status];
+  if ("status" in props && props.status) {
+    const config = statusMap[props.status as AppointmentStatus];
 
     return (
       <span
@@ -74,7 +74,7 @@ export function StatusBadge(props: StatusBadgeProps) {
     );
   }
 
-  const config = trendMap[props.trend];
+  const config = trendMap[props.trend as TrendDirection];
 
   return (
     <span

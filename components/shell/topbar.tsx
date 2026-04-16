@@ -1,9 +1,12 @@
 "use client";
 
+import { useTransition } from "react";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Icon } from "@/components/shared/icon";
 import { getRouteMeta } from "@/lib/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 type TopbarProps = {
   demoMode: boolean;
@@ -11,7 +14,18 @@ type TopbarProps = {
 
 export function Topbar({ demoMode }: TopbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const meta = getRouteMeta(pathname);
+
+  function handleLogout() {
+    startTransition(async () => {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.replace("/login");
+      router.refresh();
+    });
+  }
 
   return (
     <header className="shell-surface sticky top-4 z-30 rounded-shell border border-border px-4 py-4 shadow-soft md:px-6">
@@ -46,6 +60,16 @@ export function Topbar({ demoMode }: TopbarProps) {
           <button className="flex size-11 items-center justify-center rounded-full border border-border bg-white/80 text-muted-foreground transition hover:border-brand/20 hover:text-brand">
             <Icon name="bell" />
           </button>
+
+          {!demoMode ? (
+            <button
+              onClick={handleLogout}
+              disabled={isPending}
+              className="rounded-full border border-border bg-white/80 px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:border-brand/20 hover:text-brand disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? "Saindo..." : "Sair"}
+            </button>
+          ) : null}
         </div>
       </div>
     </header>

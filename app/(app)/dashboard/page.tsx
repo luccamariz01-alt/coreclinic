@@ -13,13 +13,30 @@ import {
   todayAppointments,
   weeklyLoad
 } from "@/lib/demo-data";
+import { hasSupabaseEnv } from "@/lib/env";
+import { getDashboardMetrics, getTodayAppointments } from "@/lib/supabase/data";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Visao executiva da operacao clinica."
 };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  let metrics = dashboardMetrics;
+  let appointments = todayAppointments;
+
+  if (hasSupabaseEnv) {
+    const supabase = await createClient();
+    const [dbMetrics, dbAppointments] = await Promise.all([
+      getDashboardMetrics(supabase),
+      getTodayAppointments(supabase)
+    ]);
+
+    metrics = dbMetrics;
+    appointments = dbAppointments.length ? dbAppointments : todayAppointments;
+  }
+
   return (
     <div className="space-y-5">
       <Reveal>
@@ -93,7 +110,7 @@ export default function DashboardPage() {
       </Reveal>
 
       <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
-        {dashboardMetrics.map((metric, index) => (
+        {metrics.map((metric, index) => (
           <Reveal key={metric.label} delay={0.06 * (index + 1)}>
             <MetricCard metric={metric} />
           </Reveal>
@@ -161,7 +178,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {todayAppointments.map((appointment) => (
+              {appointments.map((appointment) => (
                 <article
                   key={appointment.id}
                   className="rounded-[1.35rem] border border-border bg-white/[0.82] p-4"

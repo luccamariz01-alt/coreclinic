@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 
 import { Panel } from "@/components/shared/panel";
 import { Reveal } from "@/components/shared/reveal";
+import { hasSupabaseEnv } from "@/lib/env";
 import { patientActivities, patients } from "@/lib/demo-data";
+import { createClient } from "@/lib/supabase/server";
 
 type PatientDetailPageProps = {
   params: Promise<{
@@ -16,7 +18,7 @@ export async function generateMetadata({
   params
 }: PatientDetailPageProps): Promise<Metadata> {
   const { id } = await params;
-  const patient = patients.find((item) => item.id === id);
+  const patient = await getPatientById(id);
 
   return {
     title: patient ? patient.name : "Paciente"
@@ -27,7 +29,7 @@ export default async function PatientDetailPage({
   params
 }: PatientDetailPageProps) {
   const { id } = await params;
-  const patient = patients.find((item) => item.id === id);
+  const patient = await getPatientById(id);
 
   if (!patient) {
     notFound();
@@ -45,7 +47,7 @@ export default async function PatientDetailPage({
                 {patient.name
                   .split(" ")
                   .slice(0, 2)
-                  .map((part) => part[0])
+                  .map((part: string) => part[0])
                   .join("")}
               </div>
               <div>
@@ -118,30 +120,76 @@ export default async function PatientDetailPage({
           </div>
 
           <div className="space-y-4">
-            {activities.map((activity) => (
-              <article
-                key={activity.id}
-                className="rounded-[1.3rem] border border-border bg-white/[0.82] p-5"
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">{activity.title}</p>
-                    <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-                      {activity.description}
-                    </p>
+            {activities.length ? (
+              activities.map((activity) => (
+                <article
+                  key={activity.id}
+                  className="rounded-[1.3rem] border border-border bg-white/[0.82] p-5"
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">{activity.title}</p>
+                      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                        {activity.description}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-foreground">{activity.date}</p>
+                      {activity.amount ? (
+                        <p className="mt-1 text-sm text-brand">{activity.amount}</p>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">{activity.date}</p>
-                    {activity.amount ? (
-                      <p className="mt-1 text-sm text-brand">{activity.amount}</p>
-                    ) : null}
-                  </div>
-                </div>
+                </article>
+              ))
+            ) : (
+              <article className="rounded-[1.3rem] border border-border bg-white/[0.82] p-5">
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Sem historico detalhado para este paciente no momento.
+                </p>
               </article>
-            ))}
+            )}
           </div>
         </Panel>
       </Reveal>
     </div>
   );
+}
+
+async function getPatientById(id: string) {
+  if (hasSupabaseEnv) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("pacientes")
+      .select("id,nome,email,telefone,observacoes,created_at")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (data) {
+      const createdAt = data.created_at ? new Date(data.created_at) : null;
+      const lastVisit = createdAt
+        ? new Intl.DateTimeFormat("pt-BR", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          })
+            .format(createdAt)
+            .replace(".", "")
+        : "-";
+
+      return {
+        id: data.id,
+        name: data.nome,
+        email: data.email ?? "-",
+        phone: data.telefone ?? "-",
+        lastVisit,
+        procedure: "Consultar agenda",
+        lifetimeValue: "N/D",
+        segment: "Em definicao",
+        notes: data.observacoes ?? "Sem observacoes."
+      };
+    }
+  }
+
+  return patients.find((item) => item.id === id);
 }

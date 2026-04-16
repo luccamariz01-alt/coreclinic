@@ -49,6 +49,22 @@ export type Procedure = {
   protocol: string[];
 };
 
+export type ProcedureRecord = {
+  id: string;
+  nome: string;
+  descricao: string | null;
+  categoria: string | null;
+  valor: number;
+  duracao_minutos: number;
+  ativo: boolean;
+  imagem_url: string | null;
+  caracteristicas: string | null;
+  preparacao: string | null;
+  cuidados_pos: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Activity = {
   id: string;
   title: string;

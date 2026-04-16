@@ -4,13 +4,24 @@ import type { Metadata } from "next";
 import { Panel } from "@/components/shared/panel";
 import { Reveal } from "@/components/shared/reveal";
 import { patients } from "@/lib/demo-data";
+import { hasSupabaseEnv } from "@/lib/env";
+import { getPatients } from "@/lib/supabase/data";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Pacientes",
   description: "Base de pacientes com leitura premium."
 };
 
-export default function PatientsPage() {
+export default async function PatientsPage() {
+  let currentPatients = patients;
+
+  if (hasSupabaseEnv) {
+    const supabase = await createClient();
+    const dbPatients = await getPatients(supabase);
+    currentPatients = dbPatients.length ? dbPatients : patients;
+  }
+
   return (
     <div className="space-y-5">
       <Reveal>
@@ -102,7 +113,7 @@ export default function PatientsPage() {
                 </tr>
               </thead>
               <tbody>
-                {patients.map((patient) => (
+                {currentPatients.map((patient) => (
                   <tr key={patient.id} className="border-t border-border/80">
                     <td className="px-6 py-5">
                       <Link href={`/pacientes/${patient.id}`} className="block">
@@ -127,7 +138,7 @@ export default function PatientsPage() {
           </div>
 
           <div className="grid gap-3 p-4 lg:hidden">
-            {patients.map((patient) => (
+            {currentPatients.map((patient) => (
               <Link
                 key={patient.id}
                 href={`/pacientes/${patient.id}`}
