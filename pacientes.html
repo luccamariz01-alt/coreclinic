@@ -27,16 +27,17 @@
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
   body { background-color: #faf9fa; color: #303335; }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<body class="clinic-theme clinic-desktop-shell font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
 
-<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
+<aside class="clinic-sidebar h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
   <div class="flex flex-col h-full py-8 space-y-2">
     <div class="px-6 mb-8">
       <h1 class="text-xl font-extrabold text-[#ac2d5e] tracking-tighter">Core Clinic</h1>
       <p class="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-[0.2em] mt-1">Gestão Médica</p>
     </div>
-    <nav class="flex-1 space-y-1 pr-4">
+    <nav class="clinic-side-nav flex-1 space-y-1 pr-4">
       <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="dashboard.html">
         <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
       </a>
@@ -61,8 +62,8 @@
   </div>
 </aside>
 
-<main class="ml-64 min-h-screen flex flex-col">
-  <header class="sticky top-0 z-40 bg-white flex justify-between items-center w-full px-8 py-4">
+<main class="clinic-main ml-64 min-h-screen flex flex-col">
+  <header class="clinic-topbar sticky top-0 z-40 bg-white flex justify-between items-center w-full px-8 py-4">
     <div class="flex items-center gap-4">
       <span class="text-xl font-bold text-[#ac2d5e] font-['Manrope'] tracking-tight">Portal Médico</span>
     </div>
@@ -252,6 +253,19 @@
   const { createClient } = supabase;
   const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeId(value) {
+    return encodeURIComponent(String(value ?? ''));
+  }
+
   async function loadPacientes(session) {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -299,28 +313,40 @@
       paginaInfo.textContent = '0 pacientes';
     } else {
       tbody.innerHTML = pacientes.map(p => {
-        const initials = p.nome.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase();
+        const initials = (p.nome || '')
+          .split(' ')
+          .filter(Boolean)
+          .slice(0,2)
+          .map(n => n[0])
+          .join('')
+          .toUpperCase() || '--';
         const last = lastAppt[p.id];
         const lastDate = last ? new Date(last.inicio).toLocaleDateString('pt-BR') : '—';
         const lastProc = last ? last.procedimento_nome : '—';
+        const id = safeId(p.id);
+        const nome = escapeHtml(p.nome || '—');
+        const contato = escapeHtml(p.telefone || p.email || '—');
+        const lastDateSafe = escapeHtml(lastDate);
+        const lastProcSafe = escapeHtml(lastProc || '—');
+        const initialsSafe = escapeHtml(initials);
         return `
-          <tr class="group hover:bg-surface-container-low/30 transition-colors cursor-pointer" onclick="window.location.href='paciente.html?id=${p.id}'">
+          <tr class="group hover:bg-surface-container-low/30 transition-colors cursor-pointer" onclick="window.location.href='paciente.html?id=${id}'">
             <td class="px-8 py-6">
               <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold text-sm">${initials}</div>
+                <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold text-sm">${initialsSafe}</div>
                 <div>
-                  <p class="font-bold text-on-surface">${p.nome}</p>
-                  <p class="text-xs text-on-surface-variant">${p.telefone || p.email || '—'}</p>
+                  <p class="font-bold text-on-surface">${nome}</p>
+                  <p class="text-xs text-on-surface-variant">${contato}</p>
                 </div>
               </div>
             </td>
-            <td class="px-8 py-6 text-sm text-on-surface-variant tabular-nums">${lastDate}</td>
+            <td class="px-8 py-6 text-sm text-on-surface-variant tabular-nums">${lastDateSafe}</td>
             <td class="px-8 py-6">
-              ${lastProc !== '—' ? `<span class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-xs font-medium">${lastProc}</span>` : '<span class="text-xs text-on-surface-variant">—</span>'}
+              ${lastProc !== '—' ? `<span class="px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-xs font-medium">${lastProcSafe}</span>` : '<span class="text-xs text-on-surface-variant">—</span>'}
             </td>
             <td class="px-8 py-6 text-right">
-              <button onclick="event.stopPropagation(); editarPaciente('${p.id}')" class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-primary" title="Editar"><span class="material-symbols-outlined">edit</span></button>
-              <button onclick="event.stopPropagation(); window.location.href='paciente.html?id=${p.id}'" class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant" title="Ver perfil"><span class="material-symbols-outlined">open_in_new</span></button>
+              <button onclick="event.stopPropagation(); editarPaciente('${id}')" class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-primary" title="Editar"><span class="material-symbols-outlined">edit</span></button>
+              <button onclick="event.stopPropagation(); window.location.href='paciente.html?id=${id}'" class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant" title="Ver perfil"><span class="material-symbols-outlined">open_in_new</span></button>
             </td>
           </tr>`;
       }).join('');
@@ -384,7 +410,8 @@
 
   // Abrir modal de edição pelo botão da linha
   window.editarPaciente = async function(id) {
-    const { data } = await _supabase.from('pacientes').select('*').eq('id', id).single();
+    const decodedId = decodeURIComponent(String(id ?? ''));
+    const { data } = await _supabase.from('pacientes').select('*').eq('id', decodedId).single();
     if (data) openPacienteModal(data);
   };
 

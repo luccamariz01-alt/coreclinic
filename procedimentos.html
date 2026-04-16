@@ -28,16 +28,17 @@
   .premium-gradient { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
   .tonal-glass { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="bg-background font-body text-on-surface antialiased">
+<body class="clinic-theme clinic-desktop-shell bg-background font-body text-on-surface antialiased">
 
-<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#f3f3f5] font-['Manrope'] text-sm font-medium z-50">
+<aside class="clinic-sidebar h-screen w-64 fixed left-0 top-0 flex flex-col bg-[#f3f3f5] font-['Manrope'] text-sm font-medium z-50">
   <div class="flex flex-col h-full p-4 gap-2">
     <div class="px-4 py-8 mb-4">
       <h1 class="text-lg font-extrabold text-[#ac2d5e]">Core Clinic</h1>
       <p class="text-xs text-on-surface-variant/70">Gestão Médica</p>
     </div>
-    <nav class="flex-1 space-y-1">
+    <nav class="clinic-side-nav flex-1 space-y-1">
       <a class="flex items-center gap-3 px-4 py-3 text-[#303335] hover:bg-[#faf9fa] hover:translate-x-1 transition-transform duration-200" href="dashboard.html">
         <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
       </a>
@@ -62,8 +63,8 @@
   </div>
 </aside>
 
-<main class="ml-64 min-h-screen">
-  <header class="sticky top-0 z-40 bg-white font-['Manrope'] text-sm tracking-tight border-b border-[#f3f3f5]">
+<main class="clinic-main ml-64 min-h-screen">
+  <header class="clinic-topbar sticky top-0 z-40 bg-white font-['Manrope'] text-sm tracking-tight border-b border-[#f3f3f5]">
     <div class="flex justify-between items-center w-full px-8 py-4">
       <div class="flex items-center gap-4">
         <h2 class="text-xl font-bold text-[#ac2d5e]">Portal Médico</h2>
@@ -158,6 +159,19 @@
   const { createClient } = supabase;
   const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeId(value) {
+    return encodeURIComponent(String(value ?? ''));
+  }
+
   async function loadProcedimentos(session) {
     const { data: procedimentos, count: total } = await _supabase
       .from('procedimentos')
@@ -198,29 +212,38 @@
       return;
     }
 
-    grid.innerHTML = procedimentos.map(p => `
+    grid.innerHTML = procedimentos.map(p => {
+      const id = safeId(p.id);
+      const nome = escapeHtml(p.nome || '—');
+      const categoria = escapeHtml(p.categoria || 'Geral');
+      const descricao = escapeHtml(p.descricao || '—');
+      const duracao = Number(p.duracao_minutos) || 0;
+      const imageSrc = cardImages[p.categoria] || defaultImg;
+      const valor = Number(p.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      return `
       <div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0px_12px_32px_rgba(48,51,53,0.06)] transition-all duration-300 flex flex-col">
         <div class="relative h-48 overflow-hidden">
-          <img alt="${p.nome}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-            src="${cardImages[p.categoria] || defaultImg}"
+          <img alt="${nome}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            src="${imageSrc}"
             onerror="this.src='${defaultImg}'"/>
-          <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase">${p.categoria || 'Geral'}</div>
+          <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-primary uppercase">${categoria}</div>
         </div>
         <div class="p-6 flex flex-col flex-1">
-          <h3 class="text-xl font-headline font-bold mb-2">${p.nome}</h3>
-          <p class="text-sm text-on-surface-variant line-clamp-2 mb-6">${p.descricao || '—'}</p>
+          <h3 class="text-xl font-headline font-bold mb-2">${nome}</h3>
+          <p class="text-sm text-on-surface-variant line-clamp-2 mb-6">${descricao}</p>
           <div class="mt-auto space-y-4">
             <div class="flex justify-between items-center text-sm font-medium">
               <div class="flex items-center gap-2 text-on-surface-variant">
                 <span class="material-symbols-outlined text-lg">schedule</span>
-                <span>${p.duracao_minutos} min</span>
+                <span>${duracao} min</span>
               </div>
-              <div class="text-primary-dim font-headline font-bold">R$ ${Number(p.valor).toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
+              <div class="text-primary-dim font-headline font-bold">R$ ${valor}</div>
             </div>
-            <button onclick="window.location.href='procedimento-detalhe.html?id=${p.id}'" class="w-full py-3 bg-surface-container-high rounded-lg text-sm font-semibold hover:bg-primary hover:text-white transition-colors">Ver Detalhes</button>
+            <button onclick="window.location.href='procedimento-detalhe.html?id=${id}'" class="w-full py-3 bg-surface-container-high rounded-lg text-sm font-semibold hover:bg-primary hover:text-white transition-colors">Ver Detalhes</button>
           </div>
         </div>
-      </div>`).join('') + `
+      </div>`;
+    }).join('') + `
       <div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-[0px_12px_32px_rgba(48,51,53,0.06)] transition-all duration-300 flex flex-col border border-dashed border-primary/20 bg-primary/5 cursor-pointer">
         <div class="flex-1 flex flex-col items-center justify-center p-12 text-center group-hover:bg-primary/10 transition-colors">
           <div class="h-16 w-16 rounded-full bg-white flex items-center justify-center text-primary shadow-sm mb-4">

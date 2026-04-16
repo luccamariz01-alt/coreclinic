@@ -28,10 +28,11 @@
   .primary-gradient { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
   body { min-height: max(884px, 100dvh); }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="bg-surface text-on-surface min-h-screen">
+<body class="clinic-theme clinic-mobile-shell bg-surface text-on-surface min-h-screen">
 <!-- TopAppBar -->
-<header class="w-full top-0 sticky z-50 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
+<header class="clinic-mobile-header w-full top-0 sticky z-50 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-[#ac2d5e]">bubble_chart</span>
 <h1 class="text-xl font-extrabold text-[#ac2d5e] font-['Manrope'] tracking-tight">Core Clinic</h1>
@@ -42,7 +43,7 @@
 </button>
 </div>
 </header>
-<main class="px-6 pt-4 pb-32">
+<main class="clinic-mobile-main px-6 pt-4 pb-32">
 <!-- Dashboard Intro -->
 <section class="mb-8">
 <p class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-1">Visão Geral</p>
@@ -125,7 +126,7 @@ Mês
 </section>
 </main>
 <!-- BottomNavBar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<nav class="clinic-mobile-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
 <a class="flex flex-col items-center justify-center bg-[#f3f3f5] text-[#ac2d5e] rounded-[1rem] px-4 py-1.5 active:scale-90 transition-transform duration-200" href="dashboard-mobile.html">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Dashboard</span>
@@ -152,6 +153,15 @@ Mês
   const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   // Currency formatter
   function formatBRL(value) {
@@ -298,8 +308,8 @@ Mês
 
     for (const appt of appointments) {
       const { time, ampm } = formatTime(appt.data_hora);
-      const pacienteNome = appt.paciente_nome || 'Paciente';
-      const procedimentoNome = appt.procedimento_nome || 'Procedimento';
+      const pacienteNome = escapeHtml(appt.paciente_nome || 'Paciente');
+      const procedimentoNome = escapeHtml(appt.procedimento_nome || 'Procedimento');
       const pacienteId = appt.paciente_id || '';
 
       const card = document.createElement('a');
@@ -310,8 +320,8 @@ Mês
 
       card.innerHTML = `
         <div class="flex flex-col items-center justify-center bg-surface-container-low rounded-lg py-2 px-3 min-w-[60px]">
-          <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">${time}</span>
-          <span class="text-lg font-bold text-primary">${ampm}</span>
+          <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">${escapeHtml(time)}</span>
+          <span class="text-lg font-bold text-primary">${escapeHtml(ampm)}</span>
         </div>
         <div class="flex-1">
           <h4 class="font-bold text-on-surface leading-tight">${pacienteNome}</h4>

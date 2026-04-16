@@ -30,11 +30,12 @@
   body { min-height: max(884px, 100dvh); font-family: 'Inter', sans-serif; }
   h1, h2, h3 { font-family: 'Manrope', sans-serif; }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="bg-surface text-on-surface min-h-screen pb-32">
+<body class="clinic-theme clinic-mobile-shell bg-surface text-on-surface min-h-screen pb-32">
 
 <!-- TopAppBar -->
-<header class="w-full top-0 sticky z-50 bg-[#faf9fa] flex items-center justify-between px-6 py-4">
+<header class="clinic-mobile-header w-full top-0 sticky z-50 bg-[#faf9fa] flex items-center justify-between px-6 py-4">
   <div class="flex items-center gap-4">
     <a href="procedimentos-mobile.html" class="active:scale-95 duration-200 text-[#ac2d5e] flex items-center justify-center">
       <span class="material-symbols-outlined">arrow_back</span>
@@ -49,7 +50,7 @@
 <!-- Toast -->
 <div id="toast" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-2 rounded-full text-sm font-semibold shadow-lg"></div>
 
-<main class="px-6 pt-4 space-y-8">
+<main class="clinic-mobile-main px-6 pt-4 space-y-8">
 
   <!-- Image Section -->
   <section class="flex flex-col items-center gap-4">
@@ -134,7 +135,7 @@
 </main>
 
 <!-- BottomNavBar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl border-t border-[#b0b2b5]/15 shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<nav class="clinic-mobile-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl border-t border-[#b0b2b5]/15 shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
   <a href="dashboard-mobile.html" class="flex flex-col items-center justify-center text-[#303335]/60 hover:opacity-80 transition-all duration-300 ease-out">
     <span class="material-symbols-outlined">dashboard</span>
     <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider">Início</span>

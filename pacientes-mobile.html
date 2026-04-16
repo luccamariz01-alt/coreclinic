@@ -27,10 +27,11 @@
     },
   }
 </script>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="bg-surface pb-32">
+<body class="clinic-theme clinic-mobile-shell bg-surface pb-32">
 <!-- TopAppBar -->
-<header class="w-full top-0 sticky z-50 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
+<header class="clinic-mobile-header w-full top-0 sticky z-50 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-[#ac2d5e]">bubble_chart</span>
 <h1 class="text-xl font-extrabold text-[#ac2d5e] font-['Manrope'] tracking-tight">Core Clinic</h1>
@@ -39,7 +40,7 @@
 <span class="material-symbols-outlined text-[#303335]">notifications</span>
 </button>
 </header>
-<main class="px-6 pt-4 space-y-8">
+<main class="clinic-mobile-main px-6 pt-4 space-y-8">
 <!-- Search & Filter -->
 <section class="space-y-4">
 <div class="relative group">
@@ -96,7 +97,7 @@
 <span class="material-symbols-outlined text-2xl">add</span>
 </button>
 <!-- BottomNavBar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<nav class="clinic-mobile-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
 <a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-colors rounded-[1rem] px-4 py-1.5 active:scale-90 duration-200" href="dashboard-mobile.html">
 <span class="material-symbols-outlined mb-1">dashboard</span>
 <span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest">Dashboard</span>
@@ -120,6 +121,19 @@
   const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeId(value) {
+    return encodeURIComponent(String(value ?? ''));
+  }
 
   let allPatients = [];
   let latestAgendamentoMap = {};
@@ -172,22 +186,27 @@
       const lastAgendamento = latestAgendamentoMap[patient.id];
       const lastVisitDate = lastAgendamento ? formatDatePtBR(lastAgendamento.inicio) : 'Sem visitas';
       const lastProcedimento = lastAgendamento ? (lastAgendamento.procedimento_nome || '—') : '—';
+      const patientId = safeId(patient.id);
+      const initialsSafe = escapeHtml(initials);
+      const patientName = escapeHtml(patient.nome || '—');
+      const lastVisitDateSafe = escapeHtml(lastVisitDate);
+      const lastProcedimentoSafe = escapeHtml(lastProcedimento);
 
       return `
-        <div class="bg-surface-container-lowest p-5 rounded-xl flex items-center gap-4 transition-transform active:scale-[0.98] cursor-pointer" onclick="window.location.href='prontuario-mobile.html?id=${patient.id}'">
+        <div class="bg-surface-container-lowest p-5 rounded-xl flex items-center gap-4 transition-transform active:scale-[0.98] cursor-pointer" onclick="window.location.href='prontuario-mobile.html?id=${patientId}'">
           <div class="w-12 h-12 rounded-full bg-primary-container/20 flex-shrink-0 flex items-center justify-center text-primary font-bold text-lg">
-            ${initials}
+            ${initialsSafe}
           </div>
           <div class="flex-grow">
-            <h3 class="font-headline font-bold text-on-surface">${patient.nome || '—'}</h3>
+            <h3 class="font-headline font-bold text-on-surface">${patientName}</h3>
             <div class="flex items-center gap-3 mt-1">
               <div class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-[14px] text-on-surface-variant">event</span>
-                <span class="text-xs text-on-surface-variant">${lastVisitDate}</span>
+                <span class="text-xs text-on-surface-variant">${lastVisitDateSafe}</span>
               </div>
               <div class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-[14px] text-primary">medical_information</span>
-                <span class="text-xs text-on-surface-variant">${lastProcedimento}</span>
+                <span class="text-xs text-on-surface-variant">${lastProcedimentoSafe}</span>
               </div>
             </div>
           </div>

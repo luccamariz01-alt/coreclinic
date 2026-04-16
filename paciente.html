@@ -27,15 +27,16 @@
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
   .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<body class="clinic-theme clinic-desktop-shell bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
 
-<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
+<aside class="clinic-sidebar h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
   <div class="px-8 py-8">
     <h1 class="text-xl font-extrabold text-[#ac2d5e] tracking-tighter">Core Clinic</h1>
     <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">GESTÃO MÉDICA</p>
   </div>
-  <nav class="flex flex-col flex-1 space-y-1">
+  <nav class="clinic-side-nav flex flex-col flex-1 space-y-1">
     <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] hover:bg-white/50 transition-all duration-200" href="dashboard.html">
       <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
     </a>
@@ -59,7 +60,7 @@
   </div>
 </aside>
 
-<header class="fixed top-0 right-0 w-full z-40 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 h-16 ml-64 shadow-sm shadow-pink-100/20">
+<header class="clinic-topbar fixed top-0 right-0 w-full z-40 bg-white/80 backdrop-blur-md flex items-center justify-between px-8 h-16 ml-64 shadow-sm shadow-pink-100/20">
   <div class="flex items-center gap-4 flex-1 ml-64">
     <span class="material-symbols-outlined text-slate-400">search</span>
     <input class="bg-transparent border-none focus:ring-0 text-sm w-64" placeholder="Buscar paciente..." type="text"/>
@@ -75,7 +76,7 @@
   </div>
 </header>
 
-<main class="ml-64 pt-24 px-12 pb-12 min-h-screen">
+<main class="clinic-main ml-64 pt-24 px-12 pb-12 min-h-screen">
   <div class="mb-10">
     <nav class="flex items-center gap-2 text-xs uppercase tracking-widest text-on-surface-variant mb-2">
       <a href="pacientes.html" class="hover:text-primary transition-colors">Pacientes</a>
@@ -188,6 +189,15 @@
   const { createClient } = supabase;
   const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   async function loadPaciente(session) {
     const params = new URLSearchParams(window.location.search);
     const pacienteId = params.get('id');
@@ -249,15 +259,20 @@
         const statusBg = a.status === 'concluido' ? 'bg-tertiary-container text-on-tertiary-container'
           : a.status === 'cancelado' ? 'bg-rose-50 text-rose-700'
           : 'bg-surface-container text-on-surface-variant';
+        const procedimentoNome = escapeHtml(a.procedimento_nome || '—');
+        const observacoes = escapeHtml(a.observacoes || '—');
+        const statusLabel = escapeHtml(a.status || 'agendado');
+        const dataInicioSafe = escapeHtml(dataInicio);
+        const durSafe = escapeHtml(dur);
         return `
           <tr class="hover:bg-surface transition-colors">
-            <td class="px-8 py-6 font-medium text-sm">${dataInicio}</td>
+            <td class="px-8 py-6 font-medium text-sm">${dataInicioSafe}</td>
             <td class="px-8 py-6">
-              <span class="font-semibold text-on-surface block">${a.procedimento_nome || '—'}</span>
-              <span class="text-xs text-on-surface-variant">Duração: ${dur}</span>
+              <span class="font-semibold text-on-surface block">${procedimentoNome}</span>
+              <span class="text-xs text-on-surface-variant">Duração: ${durSafe}</span>
             </td>
-            <td class="px-8 py-6 text-sm">${a.observacoes || '—'}</td>
-            <td class="px-8 py-6"><span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBg}">${a.status}</span></td>
+            <td class="px-8 py-6 text-sm">${observacoes}</td>
+            <td class="px-8 py-6"><span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBg}">${statusLabel}</span></td>
             <td class="px-8 py-6 text-right font-bold text-primary">${a.valor_cobrado ? 'R$ ' + Number(a.valor_cobrado).toLocaleString('pt-BR', {minimumFractionDigits:2}) : '—'}</td>
             <td class="px-8 py-6 text-right"><button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button></td>
           </tr>`;

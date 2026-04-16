@@ -30,15 +30,16 @@
   .premium-gradient { background: linear-gradient(135deg, #ac2d5e 0%, #fd6c9c 100%); }
   .ambient-bloom { box-shadow: 0px 12px 32px rgba(48,51,53,0.06); }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="antialiased overflow-hidden">
+<body class="clinic-theme clinic-desktop-shell antialiased overflow-hidden">
 
-<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] dark:bg-slate-900 font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
+<aside class="clinic-sidebar h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] dark:bg-slate-900 font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50">
   <div class="px-8 py-8">
     <h1 class="font-extrabold text-[#ac2d5e] dark:text-[#fd6c9c] tracking-tighter text-lg">Core Clinic</h1>
     <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Medical Management</p>
   </div>
-  <nav class="flex flex-col flex-1 space-y-2">
+  <nav class="clinic-side-nav flex flex-col flex-1 space-y-2">
     <a class="flex items-center gap-3 px-6 py-4 bg-white dark:bg-slate-800 text-[#ac2d5e] dark:text-[#fd6c9c] font-bold rounded-r-full transition-all" href="dashboard.html">
       <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
     </a>
@@ -69,7 +70,7 @@
   </div>
 </aside>
 
-<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex justify-between items-center px-8 font-['Inter'] text-sm font-medium">
+<header class="clinic-topbar fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex justify-between items-center px-8 font-['Inter'] text-sm font-medium">
   <div class="flex items-center gap-4">
     <span class="text-rose-600 dark:text-rose-400 font-semibold">CoreClinic Dashboard</span>
   </div>
@@ -89,7 +90,7 @@
   </div>
 </header>
 
-<main class="ml-64 pt-16 h-screen overflow-y-auto bg-surface">
+<main class="clinic-main ml-64 pt-16 h-screen overflow-y-auto bg-surface">
   <div class="max-w-[1400px] mx-auto p-12 space-y-12">
     <section class="flex justify-between items-end">
       <div>
@@ -229,6 +230,15 @@
   const { createClient } = supabase;
   const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   async function loadDashboard(session) {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -310,13 +320,16 @@
       agendaContainer.innerHTML = agendaHoje.map(a => {
         const hora = new Date(a.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         const statusColor = a.status === 'confirmado' ? 'bg-emerald-50 text-emerald-700' : a.status === 'cancelado' ? 'bg-rose-50 text-rose-700' : 'bg-surface-container text-on-surface-variant';
+        const pacienteNome = escapeHtml(a.paciente_nome || '—');
+        const procedimentoNome = escapeHtml(a.procedimento_nome || '—');
+        const statusLabel = escapeHtml(a.status || 'agendado');
         return `
           <div class="flex items-start gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-all cursor-pointer">
             <div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">${hora}</div>
             <div>
-              <p class="text-sm font-bold text-on-surface">${a.paciente_nome}</p>
-              <p class="text-xs text-on-surface-variant">${a.procedimento_nome || '—'}</p>
-              <span class="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColor}">${a.status}</span>
+              <p class="text-sm font-bold text-on-surface">${pacienteNome}</p>
+              <p class="text-xs text-on-surface-variant">${procedimentoNome}</p>
+              <span class="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColor}">${statusLabel}</span>
             </div>
           </div>`;
       }).join('');

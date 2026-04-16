@@ -30,15 +30,16 @@
   .bloom-shadow { box-shadow: 0px 12px 32px rgba(48,51,53,0.06); }
   .surface-tonal-shift { background-image: linear-gradient(to bottom, rgba(172,45,94,0.02), transparent); }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="font-body selection:bg-primary-container selection:text-on-primary-container">
+<body class="clinic-theme clinic-desktop-shell font-body selection:bg-primary-container selection:text-on-primary-container">
 
-<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50 surface-tonal-shift">
+<aside class="clinic-sidebar h-screen w-64 fixed left-0 top-0 flex flex-col overflow-y-auto bg-[#f3f3f5] font-['Manrope'] antialiased text-sm font-medium tracking-tight z-50 surface-tonal-shift">
   <div class="px-8 py-10">
     <h1 class="text-xl font-extrabold text-[#ac2d5e] tracking-tighter">Core Clinic</h1>
     <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-1">Medical Management</p>
   </div>
-  <nav class="flex-1 space-y-2">
+  <nav class="clinic-side-nav flex-1 space-y-2">
     <a class="flex items-center gap-3 px-6 py-4 text-[#303335] hover:text-[#ac2d5e] transition-all duration-200 hover:bg-white/50" href="dashboard.html">
       <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
     </a>
@@ -62,7 +63,7 @@
   </div>
 </aside>
 
-<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 backdrop-blur-md flex justify-between items-center px-8 font-['Inter'] text-sm font-medium border-b border-surface-container">
+<header class="clinic-topbar fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 backdrop-blur-md flex justify-between items-center px-8 font-['Inter'] text-sm font-medium border-b border-surface-container">
   <div class="flex items-center gap-4">
     <span class="text-on-surface/50">Agenda</span>
     <span class="text-on-surface/20">/</span>
@@ -86,7 +87,7 @@
   </div>
 </header>
 
-<main class="ml-64 pt-24 px-12 pb-12">
+<main class="clinic-main ml-64 pt-24 px-12 pb-12">
   <div class="max-w-7xl mx-auto space-y-8">
     <section>
       <div class="flex justify-between items-center mb-6">
@@ -265,6 +266,28 @@ const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
 const { createClient } = supabase;
 const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function safeId(value) {
+  return encodeURIComponent(String(value ?? ''));
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 let currentFilter   = 'mes';
 let currentYear     = new Date().getFullYear();
@@ -322,7 +345,7 @@ function setFilter(name) {
 function renderAgendaHoje(appointments, emptyMsg) {
   const container = document.getElementById('agenda-hoje-list');
   if (!appointments || appointments.length === 0) {
-    container.innerHTML = `<p class="text-xs text-on-surface-variant text-center py-8">${emptyMsg}</p>`;
+    container.innerHTML = `<p class="text-xs text-on-surface-variant text-center py-8">${escapeHtml(emptyMsg)}</p>`;
     return;
   }
   container.innerHTML = appointments.map(a => {
@@ -335,6 +358,9 @@ function renderAgendaHoje(appointments, emptyMsg) {
     const statusBg = a.status === 'confirmado' ? 'bg-tertiary-container text-on-tertiary-container'
       : a.status === 'cancelado' ? 'bg-rose-50 text-rose-700'
       : 'bg-surface-container-highest text-on-surface';
+    const pacienteNome = escapeHtml(a.paciente_nome || '—');
+    const procedimentoNome = escapeHtml(a.procedimento_nome || '—');
+    const statusLabel = escapeHtml(a.status || 'agendado');
     return `
       <div class="group flex items-start gap-4 p-4 rounded-2xl ${bgClass} hover:bg-surface-container-low transition-all duration-300">
         <div class="text-center w-12 pt-1">
@@ -342,9 +368,9 @@ function renderAgendaHoje(appointments, emptyMsg) {
           <p class="text-[10px] font-bold text-on-surface-variant/60 uppercase">${ampm}</p>
         </div>
         <div class="flex-1 border-l-2 ${borderColor} pl-4">
-          <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">${a.paciente_nome || '—'}</h4>
-          <p class="text-xs text-on-surface-variant">${a.procedimento_nome || '—'}</p>
-          <div class="mt-2"><span class="text-[10px] ${statusBg} px-2 py-0.5 rounded-md font-semibold">${a.status}</span></div>
+          <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">${pacienteNome}</h4>
+          <p class="text-xs text-on-surface-variant">${procedimentoNome}</p>
+          <div class="mt-2"><span class="text-[10px] ${statusBg} px-2 py-0.5 rounded-md font-semibold">${statusLabel}</span></div>
         </div>
       </div>`;
   }).join('');
@@ -395,6 +421,9 @@ function appointmentCard(a) {
   const statusBg = a.status === 'confirmado' ? 'bg-tertiary-container text-on-tertiary-container'
     : a.status === 'cancelado' ? 'bg-rose-50 text-rose-700'
     : 'bg-surface-container-highest text-on-surface';
+  const pacienteNome = escapeHtml(a.paciente_nome || '—');
+  const procedimentoNome = escapeHtml(a.procedimento_nome || '—');
+  const statusLabel = escapeHtml(a.status || 'agendado');
   return `
     <div class="group flex items-start gap-4 p-4 rounded-2xl ${bgClass} hover:bg-surface-container-low transition-all duration-300">
       <div class="text-center w-12 pt-1">
@@ -402,9 +431,9 @@ function appointmentCard(a) {
         <p class="text-[10px] font-bold text-on-surface-variant/60 uppercase">${ampm}</p>
       </div>
       <div class="flex-1 border-l-2 ${borderColor} pl-4">
-        <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">${a.paciente_nome || '—'}</h4>
-        <p class="text-xs text-on-surface-variant">${a.procedimento_nome || '—'}</p>
-        <div class="mt-2"><span class="text-[10px] ${statusBg} px-2 py-0.5 rounded-md font-semibold">${a.status}</span></div>
+        <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">${pacienteNome}</h4>
+        <p class="text-xs text-on-surface-variant">${procedimentoNome}</p>
+        <div class="mt-2"><span class="text-[10px] ${statusBg} px-2 py-0.5 rounded-md font-semibold">${statusLabel}</span></div>
       </div>
     </div>`;
 }
@@ -675,9 +704,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const erro = document.getElementById('agend-erro');
     btn.disabled = true; btn.textContent = 'Salvando...';
 
-    const pacienteId  = document.getElementById('a-paciente').value;
+    const pacienteIdRaw  = document.getElementById('a-paciente').value;
     const nomeLivre   = document.getElementById('a-nome-livre').value.trim();
-    const procedId    = document.getElementById('a-procedimento').value;
+    const procedIdRaw    = document.getElementById('a-procedimento').value;
     const dataInicio  = document.getElementById('a-data-inicio').value;
     const horaInicio  = document.getElementById('a-hora-inicio').value;
     const dataFim     = document.getElementById('a-data-fim').value;
@@ -686,6 +715,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const status      = document.getElementById('a-status').value;
     const obs         = document.getElementById('a-obs').value.trim();
 
+    const pacienteId = pacienteIdRaw ? decodeURIComponent(pacienteIdRaw) : '';
+    const procedId = procedIdRaw ? decodeURIComponent(procedIdRaw) : '';
     const pacienteNome = pacienteId ? _pacientes.find(p => p.id === pacienteId)?.nome : nomeLivre;
 
     if (!pacienteNome) {
@@ -776,14 +807,25 @@ async function openAgendamentoModal() {
     const { data } = await _supabase.from('procedimentos').select('id,nome,duracao_minutos,valor').eq('ativo', true).order('nome');
     _procedimentos = data || [];
     document.getElementById('a-procedimento').innerHTML = '<option value="">— Selecione o procedimento —</option>' +
-      _procedimentos.map(p => `<option value="${p.id}" data-dur="${p.duracao_minutos}">${p.nome} (${p.duracao_minutos}min — R$ ${Number(p.valor).toLocaleString('pt-BR',{minimumFractionDigits:2})})</option>`).join('');
+      _procedimentos.map(p => {
+        const id = safeId(p.id);
+        const nome = escapeHtml(p.nome || '—');
+        const dur = Number(p.duracao_minutos) || 0;
+        const valor = Number(p.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        return `<option value="${id}" data-dur="${dur}">${nome} (${dur}min — R$ ${valor})</option>`;
+      }).join('');
   }
 
   if (_pacientes.length === 0) {
     const { data } = await _supabase.from('pacientes').select('id,nome,telefone').order('nome');
     _pacientes = data || [];
     document.getElementById('a-paciente').innerHTML = '<option value="">— Selecione o paciente (ou digite abaixo) —</option>' +
-      _pacientes.map(p => `<option value="${p.id}" data-tel="${p.telefone || ''}">${p.nome}</option>`).join('');
+      _pacientes.map(p => {
+        const id = safeId(p.id);
+        const telefone = escapeAttr(p.telefone || '');
+        const nome = escapeHtml(p.nome || '—');
+        return `<option value="${id}" data-tel="${telefone}">${nome}</option>`;
+      }).join('');
   }
 
   document.getElementById('modal-agendamento').classList.remove('hidden');

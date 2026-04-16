@@ -27,10 +27,11 @@
   .headline-font { font-family: 'Manrope', sans-serif; }
   body { min-height: max(884px, 100dvh); }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="bg-surface text-on-surface min-h-screen pb-32">
+<body class="clinic-theme clinic-mobile-shell bg-surface text-on-surface min-h-screen pb-32">
 <!-- TopAppBar -->
-<header class="w-full top-0 sticky z-40 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
+<header class="clinic-mobile-header w-full top-0 sticky z-40 bg-[#faf9fa] flex justify-between items-center px-6 py-4">
 <div class="flex items-center gap-3">
 <a href="pacientes-mobile.html" class="text-[#ac2d5e] active:scale-95 duration-150">
 <span class="material-symbols-outlined text-2xl">arrow_back</span>
@@ -43,7 +44,7 @@
 </button>
 </div>
 </header>
-<main class="px-6 space-y-8 mt-4">
+<main class="clinic-mobile-main px-6 space-y-8 mt-4">
 <!-- Profile Header -->
 <section class="flex flex-col items-center">
 <div class="relative group">
@@ -102,7 +103,7 @@ NOVO AGENDAMENTO
 </section>
 </main>
 <!-- BottomNavBar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<nav class="clinic-mobile-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
 <a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] transition-transform active:scale-90 duration-200 p-2 rounded-xl" href="dashboard-mobile.html">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Dashboard</span>
@@ -125,6 +126,15 @@ NOVO AGENDAMENTO
   const SUPABASE_URL = 'https://wcmowsufrfrjajxpmcgn.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function formatCurrency(value) {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -167,7 +177,7 @@ NOVO AGENDAMENTO
       confirmado: 'Confirmado',
       em_andamento: 'Em andamento',
     };
-    return labels[status] || status;
+    return labels[status] || escapeHtml(status || '');
   }
 
   function renderTimeline(agendamentos, pagamentosMap) {
@@ -190,7 +200,10 @@ NOVO AGENDAMENTO
       const valor = pagamentosMap[ag.id] !== undefined
         ? `R$ ${Number(pagamentosMap[ag.id]).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         : '—';
-      const procedimentoNome = ag.procedimento_nome || '—';
+      const procedimentoNome = escapeHtml(ag.procedimento_nome || '—');
+      const statusLabelSafe = escapeHtml(statusLabel);
+      const dateFullSafe = escapeHtml(dateFull);
+      const valorSafe = escapeHtml(valor);
 
       return `
         <div class="flex gap-4">
@@ -202,18 +215,18 @@ NOVO AGENDAMENTO
             <div class="flex justify-between items-start">
               <div>
                 <p class="headline-font font-bold text-sm">${procedimentoNome}</p>
-                <p class="font-body text-xs text-on-surface-variant mt-0.5">${statusLabel}</p>
+                <p class="font-body text-xs text-on-surface-variant mt-0.5">${statusLabelSafe}</p>
               </div>
-              <span class="${badgeClass}">${statusLabel}</span>
+              <span class="${badgeClass}">${statusLabelSafe}</span>
             </div>
             <div class="mt-3 flex gap-4">
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant">
                 <span class="material-symbols-outlined text-xs">history</span>
-                ${dateFull}
+                ${dateFullSafe}
               </div>
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant">
                 <span class="material-symbols-outlined text-xs">payments</span>
-                ${valor}
+                ${valorSafe}
               </div>
             </div>
           </div>

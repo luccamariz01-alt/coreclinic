@@ -27,10 +27,11 @@
   h1, h2, h3 { font-family: 'Manrope', sans-serif; }
   body { min-height: max(884px, 100dvh); }
 </style>
+<link href="styles/clinic-premium.css" rel="stylesheet"/>
 </head>
-<body class="bg-surface text-on-surface min-h-screen pb-32">
+<body class="clinic-theme clinic-mobile-shell bg-surface text-on-surface min-h-screen pb-32">
 <!-- TopAppBar -->
-<header class="w-full top-0 sticky bg-[#faf9fa] z-50">
+<header class="clinic-mobile-header w-full top-0 sticky bg-[#faf9fa] z-50">
 <div class="flex justify-between items-center px-6 py-4">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-[#ac2d5e] text-2xl">bubble_chart</span>
@@ -43,7 +44,7 @@
 </div>
 </div>
 </header>
-<main class="px-6 pt-4 space-y-8">
+<main class="clinic-mobile-main px-6 pt-4 space-y-8">
 <!-- Metrics Bento -->
 <section class="grid grid-cols-2 gap-4">
 <div class="bg-surface-container-lowest rounded-xl p-4 flex flex-col justify-between h-32">
@@ -86,7 +87,7 @@
 <span class="material-symbols-outlined text-3xl">add</span>
 </button>
 <!-- BottomNavBar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
+<nav class="clinic-mobile-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-white/80 backdrop-blur-xl shadow-[0px_-12px_32px_rgba(48,51,53,0.06)] rounded-t-[1.5rem]">
 <a class="flex flex-col items-center justify-center text-[#303335]/60 hover:bg-[#f3f3f5] active:scale-90 duration-200 p-2 rounded-xl" href="dashboard-mobile.html">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="font-['Inter'] text-[10px] font-medium uppercase tracking-widest mt-1">Dashboard</span>
@@ -110,6 +111,19 @@
   const SUPABASE_ANON_KEY = 'sb_publishable_onLuRLfVbViEQv2hdEuHtw_AbtPEr67';
   const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeId(value) {
+    return encodeURIComponent(String(value ?? ''));
+  }
+
   function formatValor(value) {
     return Number(value).toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
@@ -126,9 +140,10 @@
     }
 
     container.innerHTML = procedimentos.map(proc => {
-      const nome = proc.nome || '—';
-      const categoria = proc.categoria || '—';
-      const descricao = proc.descricao || '';
+      const id = safeId(proc.id);
+      const nome = escapeHtml(proc.nome || '—');
+      const categoria = escapeHtml(proc.categoria || '—');
+      const descricao = escapeHtml(proc.descricao || '');
       const duracao = proc.duracao_minutos ?? '—';
       const valor = proc.valor != null ? formatValor(proc.valor) : '—';
 
@@ -154,7 +169,7 @@
                   <span class="text-xs font-medium">R$ ${valor}</span>
                 </div>
               </div>
-              <button onclick="window.location.href='procedimento-detalhe-mobile.html?id=${proc.id}'" class="bg-primary/5 text-primary hover:bg-primary/10 p-2 rounded-full transition-colors">
+              <button onclick="window.location.href='procedimento-detalhe-mobile.html?id=${id}'" class="bg-primary/5 text-primary hover:bg-primary/10 p-2 rounded-full transition-colors">
                 <span class="material-symbols-outlined">edit</span>
               </button>
             </div>
