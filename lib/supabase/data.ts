@@ -3,6 +3,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Appointment, DashboardMetric, Patient } from "@/lib/types";
 
 type QueryClient = SupabaseClient<any, "public", any>;
+type DateRange = {
+  start: Date;
+  endExclusive: Date;
+};
+
+export type DashboardPeriod = "day" | "week" | "month" | "custom";
 
 const statusLabel: Record<string, Appointment["status"]> = {
   agendado: "Agendado",
@@ -44,37 +50,127 @@ function startOfDay(date = new Date()) {
   return d;
 }
 
-export async function getDashboardMetrics(supabase: QueryClient): Promise<DashboardMetric[]> {
+function startOfWeek(date = new Date()) {
+  const d = startOfDay(date);
+  const day = d.getDay();
+  const offset = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
+function startOfMonth(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addDays(date: Date, days: number) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function addMonths(date: Date, months: number) {
+  return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function parseISODate(date?: string) {
+  if (!date) return null;
+  const parsed = new Date(`${date}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+export function getDashboardRange(
+  period: DashboardPeriod,
+  startDate?: string,
+  endDate?: string
+): DateRange {
   const now = new Date();
-  const dayStart = startOfDay(now);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
 
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  if (period === "day") {
+    const start = startOfDay(now);
+    return { start, endExclusive: addDays(start, 1) };
+  }
 
-  const [todayCountResult, paidResult, ticketResult] = await Promise.all([
+  if (period === "week") {
+    const start = startOfWeek(now);
+    return { start, endExclusive: addDays(start, 7) };
+  }
+
+  if (period === "month") {
+    const start = startOfMonth(now);
+    return { start, endExclusive: addMonths(start, 1) };
+  }
+
+  const parsedStart = parseISODate(startDate);
+  const parsedEnd = parseISODate(endDate);
+
+  if (!parsedStart || !parsedEnd || parsedEnd < parsedStart) {
+    const start = startOfMonth(now);
+    return { start, endExclusive: addMonths(start, 1) };
+  }
+
+  return { start: parsedStart, endExclusive: addDays(parsedEnd, 1) };
+}
+
+function getPreviousRange(current: DateRange): DateRange {
+  const durationMs = current.endExclusive.getTime() - current.start.getTime();
+  const prevEnd = new Date(current.start);
+  const prevStart = new Date(prevEnd.getTime() - durationMs);
+  return { start: prevStart, endExclusive: prevEnd };
+}
+
+function getRangeLabel(period: DashboardPeriod) {
+  if (period === "day") return "Hoje";
+  if (period === "week") return "Semana atual";
+  if (period === "month") return "Mes atual";
+  return "Periodo selecionado";
+}
+
+function getPercentDelta(current: number, previous: number) {
+  if (previous <= 0) {
+    return current > 0 ? "+100%" : "0%";
+  }
+
+  const delta = Math.round(((current - previous) / previous) * 100);
+  return `${delta > 0 ? "+" : ""}${delta}%`;
+}
+
+export async function getDashboardMetrics(
+  supabase: QueryClient,
+  range: DateRange,
+  period: DashboardPeriod
+): Promise<DashboardMetric[]> {
+  const previousRange = getPreviousRange(range);
+
+  const [appointmentsCountResult, paidResult, ticketResult, previousCountResult] = await Promise.all([
     supabase
       .from("agendamentos")
       .select("id", { count: "exact", head: true })
-      .gte("inicio", dayStart.toISOString())
-      .lt("inicio", dayEnd.toISOString()),
+      .gte("inicio", range.start.toISOString())
+      .lt("inicio", range.endExclusive.toISOString()),
     supabase
       .from("pagamentos")
       .select("valor")
       .eq("status", "pago")
-      .gte("data_pagamento", monthStart.toISOString())
-      .lt("data_pagamento", nextMonthStart.toISOString()),
+      .gte("data_pagamento", range.start.toISOString())
+      .lt("data_pagamento", range.endExclusive.toISOString()),
     supabase
       .from("agendamentos")
       .select("valor_cobrado")
       .eq("status", "concluido")
       .not("valor_cobrado", "is", null)
-      .gte("inicio", monthStart.toISOString())
-      .lt("inicio", nextMonthStart.toISOString())
+      .gte("inicio", range.start.toISOString())
+      .lt("inicio", range.endExclusive.toISOString()),
+    supabase
+      .from("agendamentos")
+      .select("id", { count: "exact", head: true })
+      .gte("inicio", previousRange.start.toISOString())
+      .lt("inicio", previousRange.endExclusive.toISOString())
   ]);
 
-  const todayCount = todayCountResult.count ?? 0;
+  const appointmentsCount = appointmentsCountResult.count ?? 0;
+  const previousAppointmentsCount = previousCountResult.count ?? 0;
+  const appointmentsDelta = getPercentDelta(appointmentsCount, previousAppointmentsCount);
+  const rangeLabel = getRangeLabel(period);
   const paidTotal =
     paidResult.data?.reduce((acc, row) => acc + Number(row.valor ?? 0), 0) ?? 0;
   const ticketValues = ticketResult.data?.map((row) => Number(row.valor_cobrado ?? 0)) ?? [];
@@ -84,16 +180,21 @@ export async function getDashboardMetrics(supabase: QueryClient): Promise<Dashbo
 
   return [
     {
-      label: "Agendamentos do dia",
-      value: String(todayCount),
-      delta: "Dados reais",
-      detail: "Total de agendamentos de hoje no Supabase",
-      trend: "stable"
+      label: "Agendamentos no periodo",
+      value: String(appointmentsCount),
+      delta: appointmentsDelta,
+      detail: "Comparado com o periodo anterior equivalente",
+      trend:
+        appointmentsCount > previousAppointmentsCount
+          ? "up"
+          : appointmentsCount < previousAppointmentsCount
+            ? "down"
+            : "stable"
     },
     {
       label: "Receita confirmada",
       value: formatMoney(paidTotal),
-      delta: "Mes atual",
+      delta: rangeLabel,
       detail: "Soma de pagamentos com status pago",
       trend: "up"
     },
@@ -107,23 +208,22 @@ export async function getDashboardMetrics(supabase: QueryClient): Promise<Dashbo
     {
       label: "Ticket medio",
       value: formatMoney(ticketAverage),
-      delta: "Mes atual",
+      delta: rangeLabel,
       detail: "Media de valor cobrado nos atendimentos concluidos",
       trend: "stable"
     }
   ];
 }
 
-export async function getTodayAppointments(supabase: QueryClient): Promise<Appointment[]> {
-  const dayStart = startOfDay();
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
-
+export async function getAppointmentsInRange(
+  supabase: QueryClient,
+  range: DateRange
+): Promise<Appointment[]> {
   const { data, error } = await supabase
     .from("agendamentos")
     .select("id,paciente_nome,procedimento_nome,inicio,fim,status,valor_cobrado")
-    .gte("inicio", dayStart.toISOString())
-    .lt("inicio", dayEnd.toISOString())
+    .gte("inicio", range.start.toISOString())
+    .lt("inicio", range.endExclusive.toISOString())
     .order("inicio", { ascending: true })
     .limit(8);
 
@@ -147,6 +247,49 @@ export async function getTodayAppointments(supabase: QueryClient): Promise<Appoi
       price: formatMoney(Number(row.valor_cobrado ?? 0))
     };
   });
+}
+
+export async function getWeeklyLoad(
+  supabase: QueryClient,
+  range: DateRange
+): Promise<Array<{ day: string; current: number; previous: number }>> {
+  const previousRange = getPreviousRange(range);
+  const dayLabels = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+  const currentCounts = [0, 0, 0, 0, 0, 0];
+  const previousCounts = [0, 0, 0, 0, 0, 0];
+
+  const [currentResult, previousResult] = await Promise.all([
+    supabase
+      .from("agendamentos")
+      .select("inicio")
+      .gte("inicio", range.start.toISOString())
+      .lt("inicio", range.endExclusive.toISOString()),
+    supabase
+      .from("agendamentos")
+      .select("inicio")
+      .gte("inicio", previousRange.start.toISOString())
+      .lt("inicio", previousRange.endExclusive.toISOString())
+  ]);
+
+  for (const row of currentResult.data ?? []) {
+    const day = new Date(row.inicio).getDay();
+    const idx = day === 0 ? 6 : day - 1;
+    if (idx >= 0 && idx <= 5) currentCounts[idx] += 1;
+  }
+
+  for (const row of previousResult.data ?? []) {
+    const day = new Date(row.inicio).getDay();
+    const idx = day === 0 ? 6 : day - 1;
+    if (idx >= 0 && idx <= 5) previousCounts[idx] += 1;
+  }
+
+  const maxCount = Math.max(...currentCounts, ...previousCounts, 1);
+
+  return dayLabels.map((day, index) => ({
+    day,
+    current: Math.max(5, Math.round((currentCounts[index] / maxCount) * 95)),
+    previous: Math.max(5, Math.round((previousCounts[index] / maxCount) * 95))
+  }));
 }
 
 export async function getPatients(supabase: QueryClient): Promise<Patient[]> {

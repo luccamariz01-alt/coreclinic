@@ -17,9 +17,6 @@ const categories = [
   "Geral"
 ];
 
-const fallbackImage =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCB6Vnpn5-GpXY4X2ItYvcu2fsFzdW2ZgsnVCUq06MVignpb4H2A3br__pc7ZQHiOl8eBbJBpRH3IJqZg86afvAHX5yy4BX6upDb6IsukePfexhApcpP_DuDv8B0wj2HYCaE5-zLC2bOOHcaQ2TEXjzTrpbNvrKT2C6sS1q-HKCMJ9SgcpBAYuQk2nMJPh2c5Ou9AC4JXWpfYWsnD2PGW4PMmsCTqKXWrccM3nofUZulRCXlLdNJFGnztTTSmVp6CMuFZZ_8i2aNcSd";
-
 type ProcedureEditorProps = {
   mode: "create" | "edit";
   initialProcedure?: ProcedureRecord;
@@ -80,11 +77,11 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
       return URL.createObjectURL(selectedImage);
     }
 
-    return initialProcedure?.imagem_url || fallbackImage;
+    return initialProcedure?.imagem_url ?? null;
   }, [initialProcedure?.imagem_url, selectedImage]);
 
   useEffect(() => {
-    if (!selectedImage) return;
+    if (!selectedImage || !previewUrl) return;
     const objectUrl = previewUrl;
     return () => URL.revokeObjectURL(objectUrl);
   }, [previewUrl, selectedImage]);
@@ -203,7 +200,24 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
         <Panel className="space-y-5 p-6 md:p-8">
           <p className="eyebrow">Imagem</p>
           <div className="relative overflow-hidden rounded-[1.35rem] border border-border bg-muted">
-            <img src={previewUrl} alt="Preview do procedimento" className="h-72 w-full object-cover" />
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Preview do procedimento"
+                className="h-72 w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-72 items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(198,91,131,0.16),transparent_30%),linear-gradient(135deg,rgba(143,39,76,0.08)_0%,rgba(198,91,131,0.18)_100%)] px-6 text-center">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">
+                    Nenhuma capa cadastrada
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Envie uma imagem para salvar este procedimento com capa no catalogo.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <label className="block">

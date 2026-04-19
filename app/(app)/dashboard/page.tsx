@@ -6,6 +6,7 @@ import { Panel } from "@/components/shared/panel";
 import { Reveal } from "@/components/shared/reveal";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Icon } from "@/components/shared/icon";
+import { PeriodFilter } from "@/components/dashboard/period-filter";
 import {
   dashboardMetrics,
   revenueComposition,
@@ -14,7 +15,13 @@ import {
   weeklyLoad
 } from "@/lib/demo-data";
 import { hasSupabaseEnv } from "@/lib/env";
-import { getDashboardMetrics, getTodayAppointments } from "@/lib/supabase/data";
+import {
+  getAppointmentsInRange,
+  getDashboardMetrics,
+  getDashboardRange,
+  getWeeklyLoad,
+  type DashboardPeriod
+} from "@/lib/supabase/data";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -22,19 +29,46 @@ export const metadata: Metadata = {
   description: "Visao executiva da operacao clinica."
 };
 
-export default async function DashboardPage() {
+function parsePeriod(rawValue: string | string[] | undefined): DashboardPeriod {
+  const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+  if (value === "day" || value === "week" || value === "month" || value === "custom") {
+    return value;
+  }
+  return "day";
+}
+
+function parseDateParam(rawValue: string | string[] | undefined) {
+  const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+  if (!value) return undefined;
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+}
+
+export default async function DashboardPage({
+  searchParams
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const period = parsePeriod(resolvedSearchParams?.period);
+  const startDate = parseDateParam(resolvedSearchParams?.start);
+  const endDate = parseDateParam(resolvedSearchParams?.end);
+  const range = getDashboardRange(period, startDate, endDate);
+
   let metrics = dashboardMetrics;
   let appointments = todayAppointments;
+  let loadByWeekday = weeklyLoad;
 
   if (hasSupabaseEnv) {
     const supabase = await createClient();
-    const [dbMetrics, dbAppointments] = await Promise.all([
-      getDashboardMetrics(supabase),
-      getTodayAppointments(supabase)
+    const [dbMetrics, dbAppointments, dbWeeklyLoad] = await Promise.all([
+      getDashboardMetrics(supabase, range, period),
+      getAppointmentsInRange(supabase, range),
+      getWeeklyLoad(supabase, range)
     ]);
 
     metrics = dbMetrics;
     appointments = dbAppointments.length ? dbAppointments : todayAppointments;
+    loadByWeekday = dbWeeklyLoad;
   }
 
   return (
@@ -109,6 +143,8 @@ export default async function DashboardPage() {
         </section>
       </Reveal>
 
+      <PeriodFilter period={period} startDate={startDate} endDate={endDate} />
+
       <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         {metrics.map((metric, index) => (
           <Reveal key={metric.label} delay={0.06 * (index + 1)}>
@@ -140,7 +176,7 @@ export default async function DashboardPage() {
             </div>
 
             <div className="grid h-[18rem] grid-cols-6 items-end gap-3">
-              {weeklyLoad.map((bar) => (
+              {loadByWeekday.map((bar) => (
                 <div key={bar.day} className="flex h-full flex-col justify-end gap-3">
                   <div className="flex h-full items-end gap-2">
                     <div
@@ -167,9 +203,11 @@ export default async function DashboardPage() {
           <Panel className="p-6 md:p-8">
             <div className="mb-6 flex items-end justify-between">
               <div>
-                <p className="eyebrow">Agenda de hoje</p>
+                <p className="eyebrow">
+                  {period === "day" ? "Agenda de hoje" : "Agenda do periodo"}
+                </p>
                 <h2 className="font-headline mt-3 text-2xl font-semibold tracking-[-0.05em] text-foreground">
-                  Sequencia do dia
+                  {period === "day" ? "Sequencia do dia" : "Sequencia filtrada"}
                 </h2>
               </div>
               <Link href="/agenda" className="text-sm font-semibold text-brand">

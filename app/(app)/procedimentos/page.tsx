@@ -24,9 +24,6 @@ function formatMinutes(value: number) {
   return `${Math.round(value || 0)} min`;
 }
 
-const fallbackImage =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCB6Vnpn5-GpXY4X2ItYvcu2fsFzdW2ZgsnVCUq06MVignpb4H2A3br__pc7ZQHiOl8eBbJBpRH3IJqZg86afvAHX5yy4BX6upDb6IsukePfexhApcpP_DuDv8B0wj2HYCaE5-zLC2bOOHcaQ2TEXjzTrpbNvrKT2C6sS1q-HKCMJ9SgcpBAYuQk2nMJPh2c5Ou9AC4JXWpfYWsnD2PGW4PMmsCTqKXWrccM3nofUZulRCXlLdNJFGnztTTSmVp6CMuFZZ_8i2aNcSd";
-
 export default async function ProceduresPage() {
   const procedures = await getProcedures();
   const activeCount = procedures.length;
@@ -94,12 +91,27 @@ export default async function ProceduresPage() {
             <Reveal key={procedure.id} delay={0.06 * (index + 1)}>
               <Panel className="h-full overflow-hidden p-0">
                 <div className="relative h-40">
-                  <img
-                    src={procedure.imagem_url || fallbackImage}
-                    alt={procedure.nome}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+                  {procedure.imagem_url ? (
+                    <>
+                      <img
+                        src={procedure.imagem_url}
+                        alt={procedure.nome}
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+                    </>
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(198,91,131,0.16),transparent_30%),linear-gradient(135deg,rgba(143,39,76,0.08)_0%,rgba(198,91,131,0.18)_100%)] px-6 text-center">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">
+                          Sem imagem
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          Cadastre uma capa para este procedimento no editor.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand">
                     {procedure.categoria || "Geral"}
                   </span>
