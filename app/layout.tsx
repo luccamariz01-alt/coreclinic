@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope, Sora } from "next/font/google";
 
 import "@/app/globals.css";
+import { metadataBase } from "@/lib/env";
 
 const bodyFont = Manrope({
   subsets: ["latin"],
@@ -15,8 +16,6 @@ const headlineFont = Sora({
   display: "swap"
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
 export const metadata: Metadata = {
   title: {
     default: "Core Clinic Gestao",
@@ -24,7 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "Plataforma de gestao empresarial para agenda, pacientes, servicos e receita.",
-  metadataBase: siteUrl ? new URL(siteUrl) : undefined,
+  metadataBase,
   openGraph: {
     title: "Core Clinic Gestao",
     description:
