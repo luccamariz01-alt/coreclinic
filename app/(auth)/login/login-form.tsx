@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Icon } from "@/components/shared/icon";
 import { Panel } from "@/components/shared/panel";
@@ -21,6 +22,7 @@ type LoginFormProps = {
 export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const canSubmit = hasSupabaseEnv;
 
@@ -33,7 +35,7 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
 
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") ?? "").trim();
-    const password = String(formData.get("password") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
 
     if (!email || !password) {
       setErrorMessage("Preencha e-mail e senha para continuar.");
@@ -53,7 +55,9 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
         return;
       }
 
-      window.location.assign("/dashboard");
+      await supabase.auth.getSession();
+      router.replace("/dashboard");
+      router.refresh();
     });
   }
 
