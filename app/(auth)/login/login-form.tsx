@@ -10,9 +10,9 @@ import { Reveal } from "@/components/shared/reveal";
 import { createClient } from "@/lib/supabase/client";
 
 const loginHighlights = [
-  "Leitura executiva da agenda e da receita sem ruido.",
-  "Base de pacientes organizada com foco em recorrencia.",
-  "Catalogo de procedimentos com melhor clareza comercial."
+  "Painel executivo da agenda, capacidade e receita.",
+  "Base de clientes organizada para acao comercial.",
+  "Catalogo de servicos com foco em margem e ticket."
 ];
 
 type LoginFormProps = {
@@ -68,10 +68,10 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
         <div className="relative z-10 flex h-full flex-col justify-between gap-12">
           <div className="max-w-xl">
             <p className="text-sm font-semibold uppercase tracking-[0.32em] text-white/[0.66]">
-              Core Clinic
+              Core Clinic Gestao
             </p>
             <h1 className="font-headline mt-6 text-4xl font-semibold leading-tight tracking-[-0.06em] md:text-6xl">
-              Operacao clinica com calma visual e leitura rapida.
+              Gestao operacional com leitura executiva.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-white/80 md:text-lg">
               A migracao para Next trouxe um shell unico, responsivo e pronto para
@@ -84,7 +84,7 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
               <Reveal
                 key={item}
                 delay={0.08 * (index + 1)}
-                className="rounded-[1.3rem] border border-white/[0.14] bg-white/10 p-4 backdrop-blur"
+                className="rounded-[1.1rem] border border-white/[0.16] bg-white/10 p-4 backdrop-blur"
               >
                 <div className="mb-4 flex size-10 items-center justify-center rounded-2xl bg-white/[0.14]">
                   <Icon name="spark" className="size-4 text-white" />
@@ -105,7 +105,7 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
                 Bem-vindo de volta
               </h2>
               <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-                Entre para continuar a operar a clinica a partir da nova base em
+                Entre para continuar a operar a empresa a partir da nova base em
                 Next.js App Router.
               </p>
             </div>
@@ -123,8 +123,8 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
                   autoCorrect="off"
                   inputMode="email"
                   required
-                  placeholder="nome@clinica.com"
-                  className="w-full rounded-full border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                  placeholder="nome@empresa.com"
+                  className="input-surface w-full rounded-full px-5 py-4"
                 />
               </label>
 
@@ -138,7 +138,7 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
                   autoComplete="current-password"
                   required
                   placeholder="********"
-                  className="w-full rounded-full border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                  className="input-surface w-full rounded-full px-5 py-4"
                 />
               </label>
 
@@ -157,7 +157,7 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
               <button
                 type="submit"
                 disabled={!canSubmit || isPending}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-gradient px-5 py-4 font-semibold text-white shadow-ambient transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-60"
+                className="cta-primary interactive-surface flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? "Entrando..." : "Entrar no painel"}
                 <Icon name="arrowRight" className="size-4" />
@@ -193,13 +193,13 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
               <div className="flex flex-wrap gap-3 pt-2">
                 <Link
                   href="/dashboard"
-                  className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted"
+                  className="interactive-surface card-surface rounded-full px-4 py-2 text-sm font-semibold text-foreground"
                 >
                   Ver dashboard
                 </Link>
                 <Link
                   href="/pacientes"
-                  className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-muted"
+                  className="interactive-surface card-surface rounded-full px-4 py-2 text-sm font-semibold text-foreground"
                 >
                   Ver pacientes
                 </Link>

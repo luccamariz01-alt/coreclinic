@@ -28,16 +28,16 @@ export function Topbar({ demoMode }: TopbarProps) {
   }
 
   return (
-    <header className="shell-surface sticky top-4 z-30 rounded-shell border border-border px-4 py-4 shadow-soft md:px-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <header className="shell-surface sticky top-3 z-30 rounded-shell border border-border px-4 py-4 shadow-soft md:px-6">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <p className="eyebrow">{meta.eyebrow}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h2 className="font-headline text-2xl font-semibold tracking-[-0.05em] text-foreground md:text-3xl">
+          <div className="mt-2 flex flex-wrap items-center gap-2.5 md:gap-3">
+            <h2 className="font-headline text-2xl font-semibold tracking-[-0.045em] text-foreground md:text-3xl">
               {meta.title}
             </h2>
             {demoMode ? (
-              <span className="rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-brand">
+              <span className="rounded-full border border-brand/15 bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-brand">
                 Demo mode
               </span>
             ) : null}
@@ -48,7 +48,7 @@ export function Topbar({ demoMode }: TopbarProps) {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="flex min-w-[16rem] items-center gap-3 rounded-full border border-border bg-white/80 px-4 py-3 text-sm text-muted-foreground">
+          <label className="input-surface flex min-w-[16rem] items-center gap-3 rounded-full px-4 py-3 text-sm text-muted-foreground">
             <Icon name="search" className="size-4" />
             <input
               aria-label="Buscar"
@@ -57,7 +57,7 @@ export function Topbar({ demoMode }: TopbarProps) {
             />
           </label>
 
-          <button className="flex size-11 items-center justify-center rounded-full border border-border bg-white/80 text-muted-foreground transition hover:border-brand/20 hover:text-brand">
+          <button className="interactive-surface card-surface flex size-11 items-center justify-center rounded-full text-muted-foreground hover:text-brand">
             <Icon name="bell" />
           </button>
 
@@ -65,7 +65,7 @@ export function Topbar({ demoMode }: TopbarProps) {
             <button
               onClick={handleLogout}
               disabled={isPending}
-              className="rounded-full border border-border bg-white/80 px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:border-brand/20 hover:text-brand disabled:cursor-not-allowed disabled:opacity-60"
+              className="interactive-surface card-surface rounded-full px-4 py-3 text-sm font-semibold text-muted-foreground hover:text-brand disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPending ? "Saindo..." : "Sair"}
             </button>

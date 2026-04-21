@@ -8,7 +8,7 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Login",
-  description: "Acesso ao painel clinico da Core Clinic."
+  description: "Acesso ao painel de gestao da Core Clinic."
 };
 
 export default async function LoginPage() {

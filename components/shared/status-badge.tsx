@@ -7,23 +7,23 @@ const statusMap: Record<
   { className: string; label: string }
 > = {
   Confirmado: {
-    className: "bg-emerald-500/[0.12] text-emerald-700",
+    className: "border border-emerald-500/15 bg-emerald-500/[0.12] text-emerald-700",
     label: "Confirmado"
   },
   Agendado: {
-    className: "bg-brand/10 text-brand",
+    className: "border border-brand/15 bg-brand/10 text-brand",
     label: "Agendado"
   },
   "Em atendimento": {
-    className: "bg-amber-500/[0.14] text-amber-700",
+    className: "border border-amber-500/15 bg-amber-500/[0.14] text-amber-700",
     label: "Em atendimento"
   },
   Concluido: {
-    className: "bg-slate-900/8 text-slate-700",
+    className: "border border-slate-900/10 bg-slate-900/8 text-slate-700",
     label: "Concluido"
   },
   Cancelado: {
-    className: "bg-rose-500/10 text-rose-700",
+    className: "border border-rose-500/15 bg-rose-500/10 text-rose-700",
     label: "Cancelado"
   }
 };
@@ -33,15 +33,15 @@ const trendMap: Record<
   { className: string; icon: "trendUp" | "trendDown" | "spark" }
 > = {
   up: {
-    className: "bg-emerald-500/[0.12] text-emerald-700",
+    className: "border border-emerald-500/15 bg-emerald-500/[0.12] text-emerald-700",
     icon: "trendUp"
   },
   down: {
-    className: "bg-rose-500/10 text-rose-700",
+    className: "border border-rose-500/15 bg-rose-500/10 text-rose-700",
     icon: "trendDown"
   },
   stable: {
-    className: "bg-brand/10 text-brand",
+    className: "border border-brand/15 bg-brand/10 text-brand",
     icon: "spark"
   }
 };

@@ -7,7 +7,7 @@ type MetricCardProps = {
 
 export function MetricCard({ metric }: MetricCardProps) {
   return (
-    <article className="panel-surface rounded-panel p-5 md:p-6">
+    <article className="panel-surface interactive-surface rounded-panel p-5 md:p-6">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">

@@ -15,13 +15,13 @@ export default function NotFound() {
         <div className="mt-8 flex justify-center gap-3">
           <Link
             href="/dashboard"
-            className="rounded-full bg-brand-gradient px-5 py-3 text-sm font-semibold text-white shadow-ambient"
+            className="cta-primary interactive-surface rounded-full px-5 py-3 text-sm font-semibold"
           >
             Ir para dashboard
           </Link>
           <Link
             href="/login"
-            className="rounded-full border border-border px-5 py-3 text-sm font-semibold text-foreground"
+            className="interactive-surface card-surface rounded-full px-5 py-3 text-sm font-semibold text-foreground"
           >
             Ir para login
           </Link>

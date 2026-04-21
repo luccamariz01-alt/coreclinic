@@ -4,7 +4,7 @@ import { ProcedureEditor } from "@/components/procedures/procedure-editor";
 
 export const metadata: Metadata = {
   title: "Novo procedimento",
-  description: "Cadastro de novo procedimento no catalogo clinico."
+  description: "Cadastro de novo servico no catalogo comercial."
 };
 
 export default function NewProcedurePage() {

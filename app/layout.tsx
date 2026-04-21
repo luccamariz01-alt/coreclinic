@@ -19,16 +19,16 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata: Metadata = {
   title: {
-    default: "Core Clinic",
-    template: "%s | Core Clinic"
+    default: "Core Clinic Gestao",
+    template: "%s | Core Clinic Gestao"
   },
   description:
-    "Dashboard clinico premium para operacao de agenda, pacientes, procedimentos e receita.",
+    "Plataforma de gestao empresarial para agenda, pacientes, servicos e receita.",
   metadataBase: siteUrl ? new URL(siteUrl) : undefined,
   openGraph: {
-    title: "Core Clinic",
+    title: "Core Clinic Gestao",
     description:
-      "Interface clinica premium para leitura operacional, agenda e relacionamento com pacientes.",
+      "Painel executivo para controle operacional, comercial e financeiro da operacao.",
     type: "website"
   }
 };

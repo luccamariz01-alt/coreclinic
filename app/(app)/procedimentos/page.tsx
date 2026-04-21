@@ -3,13 +3,14 @@ import type { Metadata } from "next";
 
 import { Panel } from "@/components/shared/panel";
 import { Reveal } from "@/components/shared/reveal";
+import { StaggerGroup } from "@/components/shared/stagger-group";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { ProcedureRecord } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Procedimentos",
-  description: "Catalogo clinico com foco comercial e operacional."
+  description: "Catalogo de servicos com foco comercial e operacional."
 };
 
 function formatCurrency(value: number) {
@@ -60,7 +61,7 @@ export default async function ProceduresPage() {
               ["Maior ticket", formatCurrency(highestValue)],
               ["Tempo medio", formatMinutes(avgDuration)]
             ].map((item) => (
-              <div key={item[0]} className="rounded-[1.3rem] bg-muted p-4">
+              <div key={item[0]} className="card-surface rounded-[1rem] bg-muted p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">
                   {item[0]}
                 </p>
@@ -79,14 +80,14 @@ export default async function ProceduresPage() {
         </p>
         <Link
           href="/procedimentos/novo"
-          className="hidden rounded-full bg-brand-gradient px-6 py-3 text-sm font-semibold text-white shadow-ambient md:inline-flex"
+          className="cta-primary interactive-surface hidden rounded-full px-6 py-3 text-sm font-semibold md:inline-flex"
         >
           Novo procedimento
         </Link>
       </section>
 
       {procedures.length ? (
-        <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <StaggerGroup className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" delay={0.04}>
           {procedures.map((procedure, index) => (
             <Reveal key={procedure.id} delay={0.06 * (index + 1)}>
               <Panel className="h-full overflow-hidden p-0">
@@ -112,7 +113,7 @@ export default async function ProceduresPage() {
                       </div>
                     </div>
                   )}
-                  <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-brand">
+                  <span className="absolute right-4 top-4 rounded-full border border-brand/15 bg-white/90 px-3 py-1 text-xs font-semibold text-brand">
                     {procedure.categoria || "Geral"}
                   </span>
                 </div>
@@ -127,7 +128,7 @@ export default async function ProceduresPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-[1.2rem] bg-muted p-4">
+                    <div className="card-surface rounded-[1rem] bg-muted p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand/60">
                         Duracao
                       </p>
@@ -135,7 +136,7 @@ export default async function ProceduresPage() {
                         {formatMinutes(Number(procedure.duracao_minutos || 0))}
                       </p>
                     </div>
-                    <div className="rounded-[1.2rem] bg-muted p-4">
+                    <div className="card-surface rounded-[1rem] bg-muted p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand/60">
                         Ticket
                       </p>
@@ -148,13 +149,13 @@ export default async function ProceduresPage() {
                   <div className="flex gap-3">
                     <Link
                       href={`/procedimentos/${procedure.id}`}
-                      className="flex-1 rounded-full bg-brand-gradient px-4 py-3 text-center text-sm font-semibold text-white"
+                      className="cta-primary interactive-surface flex-1 rounded-full px-4 py-3 text-center text-sm font-semibold"
                     >
                       Ver detalhes
                     </Link>
                     <Link
                       href={`/procedimentos/${procedure.id}`}
-                      className="rounded-full border border-border px-4 py-3 text-sm font-semibold text-foreground"
+                      className="interactive-surface card-surface rounded-full px-4 py-3 text-sm font-semibold text-foreground"
                     >
                       Editar
                     </Link>
@@ -163,7 +164,7 @@ export default async function ProceduresPage() {
               </Panel>
             </Reveal>
           ))}
-        </section>
+        </StaggerGroup>
       ) : (
         <Panel className="p-8 text-center">
           <h2 className="font-headline text-2xl font-semibold tracking-[-0.05em] text-foreground">
@@ -175,7 +176,7 @@ export default async function ProceduresPage() {
           <div className="mt-5">
             <Link
               href="/procedimentos/novo"
-              className="inline-flex rounded-full bg-brand-gradient px-6 py-3 text-sm font-semibold text-white"
+              className="cta-primary interactive-surface inline-flex rounded-full px-6 py-3 text-sm font-semibold"
             >
               Cadastrar primeiro procedimento
             </Link>
@@ -185,7 +186,7 @@ export default async function ProceduresPage() {
 
       <Link
         href="/procedimentos/novo"
-        className="fixed bottom-24 right-5 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand-gradient text-3xl text-white shadow-ambient md:hidden"
+        className="cta-primary interactive-surface fixed bottom-24 right-5 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full text-3xl md:hidden"
         aria-label="Novo procedimento"
       >
         +

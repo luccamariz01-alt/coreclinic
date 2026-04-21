@@ -50,7 +50,7 @@ export function PeriodFilter({ period, startDate, endDate }: PeriodFilterProps) 
   }
 
   return (
-    <div className="rounded-[1.25rem] border border-border bg-white/[0.74] p-3 shadow-soft">
+    <div className="card-surface rounded-[1rem] p-3">
       <div className="flex flex-wrap items-center gap-2">
         {PERIOD_OPTIONS.map((option) => {
           const isActive = option.value === period;
@@ -60,10 +60,10 @@ export function PeriodFilter({ period, startDate, endDate }: PeriodFilterProps) 
               type="button"
               disabled={isPending}
               onClick={() => updateUrl(option.value)}
-              className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
+              className={`interactive-surface rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${
                 isActive
-                  ? "bg-brand text-white shadow-soft"
-                  : "bg-white/70 text-muted-foreground hover:bg-white hover:text-foreground"
+                  ? "border-brand/20 bg-brand text-white shadow-soft"
+                  : "border-transparent bg-white/70 text-muted-foreground hover:border-border hover:bg-white hover:text-foreground"
               } disabled:cursor-not-allowed disabled:opacity-70`}
             >
               {option.label}
@@ -74,7 +74,7 @@ export function PeriodFilter({ period, startDate, endDate }: PeriodFilterProps) 
 
       {isCustom ? (
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-          <label className="flex items-center gap-2 rounded-full border border-border bg-white/80 px-4 py-2 text-xs text-muted-foreground">
+          <label className="input-surface flex items-center gap-2 rounded-full px-4 py-2 text-xs text-muted-foreground">
             <span>Inicio</span>
             <input
               type="date"
@@ -83,7 +83,7 @@ export function PeriodFilter({ period, startDate, endDate }: PeriodFilterProps) 
               className="w-full bg-transparent text-sm text-foreground outline-none"
             />
           </label>
-          <label className="flex items-center gap-2 rounded-full border border-border bg-white/80 px-4 py-2 text-xs text-muted-foreground">
+          <label className="input-surface flex items-center gap-2 rounded-full px-4 py-2 text-xs text-muted-foreground">
             <span>Fim</span>
             <input
               type="date"
@@ -96,7 +96,7 @@ export function PeriodFilter({ period, startDate, endDate }: PeriodFilterProps) 
             type="button"
             disabled={isPending || !isCustomRangeValid}
             onClick={() => updateUrl("custom", customStart, customEnd)}
-            className="rounded-full border border-brand/20 bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            className="cta-primary interactive-surface rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Aplicar
           </button>

@@ -228,7 +228,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
               type="file"
               accept="image/*"
               onChange={(event) => setSelectedImage(event.target.files?.[0] ?? null)}
-              className="block w-full rounded-[1rem] border border-border bg-white px-4 py-3 text-sm text-muted-foreground"
+              className="input-surface block w-full rounded-[1rem] px-4 py-3 text-sm text-muted-foreground"
             />
           </label>
 
@@ -246,7 +246,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
               <input
                 value={form.nome}
                 onChange={(event) => updateField("nome", event.target.value)}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
                 placeholder="Nome do procedimento"
               />
             </label>
@@ -258,7 +258,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
               <input
                 value={form.valor}
                 onChange={(event) => updateField("valor", event.target.value)}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
                 placeholder="0,00"
               />
             </label>
@@ -271,7 +271,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
                 type="number"
                 value={form.duracao}
                 onChange={(event) => updateField("duracao", event.target.value)}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
                 placeholder="0"
               />
             </label>
@@ -283,7 +283,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
               <select
                 value={form.categoria}
                 onChange={(event) => updateField("categoria", event.target.value)}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
               >
                 <option value="">Selecionar categoria</option>
                 {categories.map((category) => (
@@ -302,7 +302,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
                 value={form.descricao}
                 onChange={(event) => updateField("descricao", event.target.value)}
                 rows={4}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
                 placeholder="Descreva o procedimento"
               />
             </label>
@@ -315,7 +315,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
                 value={form.caracteristicas}
                 onChange={(event) => updateField("caracteristicas", event.target.value)}
                 rows={4}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
               />
             </label>
 
@@ -327,7 +327,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
                 value={form.preparacao}
                 onChange={(event) => updateField("preparacao", event.target.value)}
                 rows={4}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
               />
             </label>
 
@@ -339,7 +339,7 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
                 value={form.cuidadosPos}
                 onChange={(event) => updateField("cuidadosPos", event.target.value)}
                 rows={4}
-                className="w-full rounded-[1rem] border border-border bg-white px-5 py-4 outline-none transition focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+                className="input-surface w-full rounded-[1rem] px-5 py-4"
               />
             </label>
           </div>
@@ -348,14 +348,14 @@ export function ProcedureEditor({ mode, initialProcedure }: ProcedureEditorProps
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-full bg-brand-gradient px-6 py-3 text-sm font-semibold text-white shadow-ambient disabled:cursor-not-allowed disabled:opacity-60"
+              className="cta-primary interactive-surface rounded-full px-6 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isPending ? "Salvando..." : "Salvar alteracoes"}
             </button>
             <button
               type="button"
               onClick={() => router.push("/procedimentos")}
-              className="rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground"
+              className="interactive-surface card-surface rounded-full px-6 py-3 text-sm font-semibold text-foreground"
             >
               Voltar para lista
             </button>

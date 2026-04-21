@@ -91,7 +91,7 @@ export const todayAppointments: Appointment[] = [
 
 export const scheduleFocus = [
   {
-    label: "Espacos premium",
+    label: "Espacos de alta margem",
     value: "3 horarios livres",
     note: "Quinta entre 16h e 19h com melhor potencial de ticket"
   },
@@ -165,7 +165,7 @@ export const patientActivities: Record<string, Activity[]> = {
     },
     {
       id: "m2",
-      title: "Retorno clinico",
+      title: "Retorno consultivo",
       description: "Acompanhamento fotografico e orientacao de skincare.",
       date: "21 Mar 2026"
     },
@@ -245,6 +245,6 @@ export const procedures: Procedure[] = [
 export const revenueComposition = [
   { label: "Harmonizacao", value: 42 },
   { label: "Rejuvenescimento", value: 31 },
-  { label: "Skincare clinico", value: 17 },
+  { label: "Skincare profissional", value: 17 },
   { label: "Retornos", value: 10 }
 ];

@@ -8,5 +8,9 @@ type PanelProps = {
 };
 
 export function Panel({ children, className }: PanelProps) {
-  return <section className={cn("panel-surface rounded-panel", className)}>{children}</section>;
+  return (
+    <section className={cn("panel-surface rounded-panel interactive-surface", className)}>
+      {children}
+    </section>
+  );
 }
