@@ -10,6 +10,7 @@ const supabaseHostname = (() => {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: ".next",
   images: {
     remotePatterns: [
       {
