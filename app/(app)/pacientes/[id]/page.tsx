@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { Panel } from "@/components/shared/panel";
 import { Reveal } from "@/components/shared/reveal";
+import { DeleteEntityAction } from "@/components/shared/delete-entity-action";
 import { hasSupabaseEnv } from "@/lib/env";
 import { patientActivities, patients } from "@/lib/demo-data";
 import { createClient } from "@/lib/supabase/server";
@@ -51,7 +52,7 @@ export default async function PatientDetailPage({
                   .join("")}
               </div>
               <div>
-                <p className="eyebrow">Paciente ativa</p>
+                <p className="eyebrow">Cliente ativo</p>
                 <h1 className="font-headline mt-2 text-3xl font-semibold tracking-[-0.05em] text-foreground">
                   {patient.name}
                 </h1>
@@ -66,7 +67,7 @@ export default async function PatientDetailPage({
                 ["Ultima visita", patient.lastVisit],
                 ["Lifetime value", patient.lifetimeValue]
               ].map((item) => (
-                <div key={item[0]} className="rounded-[1.2rem] bg-muted px-4 py-3">
+                <div key={item[0]} className="card-surface rounded-[1rem] bg-muted px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand/60">
                     {item[0]}
                   </p>
@@ -79,18 +80,29 @@ export default async function PatientDetailPage({
           <Panel className="p-6 md:p-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="eyebrow">Resumo clinico</p>
+                <p className="eyebrow">Resumo comercial</p>
                 <h2 className="font-headline mt-3 text-3xl font-semibold tracking-[-0.05em] text-foreground">
                   Contexto pronto para a proxima acao
                 </h2>
               </div>
               <Link
                 href="/agenda"
-                className="rounded-full bg-brand-gradient px-5 py-3 text-sm font-semibold text-white shadow-ambient"
+                className="cta-primary interactive-surface rounded-full px-5 py-3 text-sm font-semibold"
               >
                 Agendar retorno
               </Link>
             </div>
+
+            {hasSupabaseEnv ? (
+              <div className="mt-5">
+                <DeleteEntityAction
+                  table="pacientes"
+                  id={patient.id}
+                  entityLabel={`o paciente ${patient.name}`}
+                  redirectTo="/pacientes"
+                />
+              </div>
+            ) : null}
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {[
@@ -98,7 +110,7 @@ export default async function PatientDetailPage({
                 ["Observacao chave", patient.notes],
                 ["Proxima melhor acao", "Oferecer pacote trimestral com retorno ja reservado"]
               ].map((item) => (
-                <div key={item[0]} className="rounded-[1.3rem] border border-border bg-white/[0.82] p-4">
+                <div key={item[0]} className="card-surface rounded-[1rem] p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">
                     {item[0]}
                   </p>
@@ -122,10 +134,7 @@ export default async function PatientDetailPage({
           <div className="space-y-4">
             {activities.length ? (
               activities.map((activity) => (
-                <article
-                  key={activity.id}
-                  className="rounded-[1.3rem] border border-border bg-white/[0.82] p-5"
-                >
+                <article key={activity.id} className="card-surface rounded-[1rem] p-5">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <p className="font-semibold text-foreground">{activity.title}</p>
@@ -143,7 +152,7 @@ export default async function PatientDetailPage({
                 </article>
               ))
             ) : (
-              <article className="rounded-[1.3rem] border border-border bg-white/[0.82] p-5">
+              <article className="card-surface rounded-[1rem] p-5">
                 <p className="text-sm leading-6 text-muted-foreground">
                   Sem historico detalhado para este paciente no momento.
                 </p>

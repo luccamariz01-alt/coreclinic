@@ -6,6 +6,8 @@ import { Panel } from "@/components/shared/panel";
 import { Reveal } from "@/components/shared/reveal";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Icon } from "@/components/shared/icon";
+import { DeleteEntityAction } from "@/components/shared/delete-entity-action";
+import { StaggerGroup } from "@/components/shared/stagger-group";
 import { PeriodFilter } from "@/components/dashboard/period-filter";
 import {
   dashboardMetrics,
@@ -26,7 +28,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Visao executiva da operacao clinica."
+  description: "Visao executiva da operacao empresarial."
 };
 
 function parsePeriod(rawValue: string | string[] | undefined): DashboardPeriod {
@@ -57,6 +59,7 @@ export default async function DashboardPage({
   let metrics = dashboardMetrics;
   let appointments = todayAppointments;
   let loadByWeekday = weeklyLoad;
+  let canDeleteAppointments = false;
 
   if (hasSupabaseEnv) {
     const supabase = await createClient();
@@ -69,6 +72,7 @@ export default async function DashboardPage({
     metrics = dbMetrics;
     appointments = dbAppointments.length ? dbAppointments : todayAppointments;
     loadByWeekday = dbWeeklyLoad;
+    canDeleteAppointments = dbAppointments.length > 0;
   }
 
   return (
@@ -80,19 +84,19 @@ export default async function DashboardPage({
               <div>
                 <p className="eyebrow">Panorama do dia</p>
                 <h1 className="font-headline mt-4 max-w-[14ch] text-4xl font-semibold tracking-[-0.06em] text-foreground md:text-5xl">
-                  A clinica esta cheia, mas a leitura continua leve.
+                  A operacao esta intensa, mas a decisao segue clara.
                 </h1>
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground md:text-base">
-                  A nova interface concentra agenda, receita e recorrencia em
-                  superficies mais calmas. O ganho aqui nao e so visual: e de
-                  velocidade cognitiva para decidir melhor.
+                  A interface concentra capacidade, receita e recorrencia em uma
+                  unica leitura. O ganho nao e so visual: e velocidade para
+                  decidir com mais seguranca.
                 </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-1">
                 {scheduleFocus.map((item, index) => (
                   <Reveal key={item.label} delay={0.06 * (index + 1)}>
-                    <div className="rounded-[1.35rem] border border-border bg-muted p-4">
+                    <div className="card-surface rounded-[1rem] p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">
                         {item.label}
                       </p>
@@ -130,13 +134,13 @@ export default async function DashboardPage({
               </div>
             </div>
 
-            <div className="mt-8 rounded-[1.35rem] bg-brand px-5 py-4 text-white">
+            <div className="mt-8 rounded-[1rem] bg-brand px-5 py-4 text-white shadow-soft">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/[0.65]">
-                Insight da semana
+                Recomendacao semanal
               </p>
               <p className="mt-3 text-sm leading-6 text-white/[0.84]">
-                Sexta sustenta o maior pico de ocupacao. Vale abrir janela premium
-                no fim da tarde em vez de pulverizar encaixes mais baratos.
+                Sexta sustenta o maior pico de ocupacao. Abra janelas de maior
+                ticket no fim da tarde e reduza encaixes de baixa margem.
               </p>
             </div>
           </Panel>
@@ -145,13 +149,13 @@ export default async function DashboardPage({
 
       <PeriodFilter period={period} startDate={startDate} endDate={endDate} />
 
-      <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+      <StaggerGroup className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4" delay={0.05}>
         {metrics.map((metric, index) => (
           <Reveal key={metric.label} delay={0.06 * (index + 1)}>
             <MetricCard metric={metric} />
           </Reveal>
         ))}
-      </section>
+      </StaggerGroup>
 
       <section className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
         <Reveal delay={0.08}>
@@ -215,13 +219,10 @@ export default async function DashboardPage({
               </Link>
             </div>
 
-            <div className="space-y-3">
+            <StaggerGroup className="space-y-3" delay={0.04}>
               {appointments.map((appointment) => (
-                <article
-                  key={appointment.id}
-                  className="rounded-[1.35rem] border border-border bg-white/[0.82] p-4"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <article key={appointment.id} className="card-surface rounded-[1rem] p-4">
+                  <div className="flex flex-col gap-4">
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
                         <h3 className="font-semibold text-foreground">
@@ -247,10 +248,20 @@ export default async function DashboardPage({
                         {appointment.price}
                       </span>
                     </div>
+
+                    {canDeleteAppointments ? (
+                      <div>
+                        <DeleteEntityAction
+                          table="agendamentos"
+                          id={appointment.id}
+                          entityLabel={`o agendamento de ${appointment.patient}`}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 </article>
               ))}
-            </div>
+            </StaggerGroup>
           </Panel>
         </Reveal>
       </section>
