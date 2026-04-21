@@ -2,9 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({
-    request
-  });
+  let response = NextResponse.next();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -25,9 +23,7 @@ export async function updateSession(request: NextRequest) {
             request.cookies.set(name, value);
           }
 
-          response = NextResponse.next({
-            request
-          });
+          response = NextResponse.next();
 
           for (const { name, value, options } of cookiesToSet) {
             response.cookies.set(name, value, options);
