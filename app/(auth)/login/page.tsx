@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { hasSupabaseEnv } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserSafe } from "@/lib/supabase/server";
 
 import { LoginForm } from "./login-form";
 
@@ -13,10 +13,7 @@ export const metadata: Metadata = {
 
 export default async function LoginPage() {
   if (hasSupabaseEnv) {
-    const supabase = await createClient();
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUserSafe();
 
     if (user) {
       redirect("/dashboard");

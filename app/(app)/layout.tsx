@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/shell/app-shell";
 import { hasSupabaseEnv } from "@/lib/env";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserSafe } from "@/lib/supabase/server";
 
 export default function AuthenticatedLayout({
   children
@@ -22,10 +22,7 @@ async function AuthenticatedLayoutWithSession({
 }: {
   children: ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUserSafe();
 
   if (!user) {
     redirect("/login");
