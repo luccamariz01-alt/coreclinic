@@ -1,3 +1,13 @@
+const supabaseHostname = (() => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) return null;
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+})();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -9,12 +19,17 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com"
-      },
-      {
-        protocol: "https",
-        hostname: "wcmowsufrfrjajxpmcgn.supabase.co"
       }
-    ]
+    ].concat(
+      supabaseHostname
+        ? [
+            {
+              protocol: "https",
+              hostname: supabaseHostname
+            }
+          ]
+        : []
+    )
   }
 };
 

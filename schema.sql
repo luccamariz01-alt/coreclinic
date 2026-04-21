@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS procedimentos (
   valor            NUMERIC(10, 2) NOT NULL CHECK (valor >= 0),
   duracao_minutos  INTEGER NOT NULL CHECK (duracao_minutos > 0),
   ativo            BOOLEAN NOT NULL DEFAULT TRUE,
+  imagem_url       TEXT,
+  caracteristicas  TEXT,
+  preparacao       TEXT,
+  cuidados_pos     TEXT,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -130,6 +134,10 @@ CREATE INDEX IF NOT EXISTS idx_pagamentos_owner_id        ON pagamentos (owner_i
 
 -- Backfill de estrutura para bancos existentes (quando tabelas ja existem).
 ALTER TABLE procedimentos ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+ALTER TABLE procedimentos ADD COLUMN IF NOT EXISTS imagem_url TEXT;
+ALTER TABLE procedimentos ADD COLUMN IF NOT EXISTS caracteristicas TEXT;
+ALTER TABLE procedimentos ADD COLUMN IF NOT EXISTS preparacao TEXT;
+ALTER TABLE procedimentos ADD COLUMN IF NOT EXISTS cuidados_pos TEXT;
 ALTER TABLE pacientes     ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 ALTER TABLE agendamentos  ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 ALTER TABLE pagamentos    ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
@@ -330,6 +338,12 @@ CREATE POLICY "service_procedimentos" ON procedimentos FOR ALL TO service_role U
 CREATE POLICY "service_pacientes" ON pacientes FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "service_agendamentos" ON agendamentos FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "service_pagamentos" ON pagamentos FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- Grants explicitos para evitar bloqueios por privilegios em bancos existentes.
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT SELECT ON TABLE procedimentos, pacientes, agendamentos, pagamentos TO authenticated;
+GRANT INSERT, UPDATE, DELETE ON TABLE procedimentos, pacientes, agendamentos, pagamentos TO authenticated;
+GRANT SELECT ON TABLE procedimentos, pacientes, agendamentos, pagamentos TO anon;
 
 -- ============================================================
 -- DADOS INICIAIS
