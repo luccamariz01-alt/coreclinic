@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 
 type RevealProps = {
@@ -11,8 +12,15 @@ type RevealProps = {
 
 export function Reveal({ children, delay = 0, className }: RevealProps) {
   const prefersReducedMotion = useReducedMotion();
+  const [isMounted, setIsMounted] = useState(false);
 
-  if (prefersReducedMotion) {
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Keep SSR and pre-hydration content visible to avoid blank screens
+  // when client-side JS fails before motion can run.
+  if (prefersReducedMotion || !isMounted) {
     return <div className={className}>{children}</div>;
   }
 

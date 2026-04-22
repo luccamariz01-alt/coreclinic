@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
@@ -11,8 +12,13 @@ type RouteTransitionProps = {
 export function RouteTransition({ children }: RouteTransitionProps) {
   const pathname = usePathname();
   const prefersReducedMotion = useReducedMotion();
+  const [isMounted, setIsMounted] = useState(false);
 
-  if (prefersReducedMotion) {
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (prefersReducedMotion || !isMounted) {
     return <main className="flex-1">{children}</main>;
   }
 
@@ -31,4 +37,3 @@ export function RouteTransition({ children }: RouteTransitionProps) {
     </AnimatePresence>
   );
 }
-

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Children } from "react";
+import { Children, useEffect, useState } from "react";
 import { motion } from "motion/react";
 
 type StaggerGroupProps = {
@@ -11,6 +11,16 @@ type StaggerGroupProps = {
 };
 
 export function StaggerGroup({ children, className, delay = 0 }: StaggerGroupProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       className={className}
