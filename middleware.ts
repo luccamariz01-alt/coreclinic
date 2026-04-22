@@ -10,6 +10,12 @@ function isPublicPath(pathname: string) {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
+function hasSupabaseAuthCookie(request: NextRequest) {
+  return request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("auth-token"));
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -17,8 +23,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const { response, user } = await updateSession(request);
   const publicRoute = isPublicPath(pathname);
+  const hasAuthCookie = hasSupabaseAuthCookie(request);
+
+  if (publicRoute && !hasAuthCookie) {
+    return NextResponse.next();
+  }
+
+  const { response, user } = await updateSession(request);
 
   if (!user && !publicRoute) {
     return NextResponse.redirect(new URL("/login", request.url));

@@ -314,10 +314,6 @@
       btnLabel.textContent = 'Entrando…';
       btnIcon.textContent  = 'hourglass_top';
 
-      // Persistência da sessão
-      const persistSession = remember;
-      _supabase.auth.setSession;
-
       const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
@@ -333,18 +329,17 @@
         return;
       }
 
-      // Salvar sessão localmente se "lembrar" estiver marcado
-      if (!remember) {
-        // Por padrão o Supabase já usa localStorage;
-        // para sessão apenas na aba, você pode usar a opção persistSession: false
-        // no createClient (veja abaixo se precisar)
+      const { data: sessionData, error: sessionError } = await _supabase.auth.getSession();
+      if (sessionError || !sessionData?.session) {
+        showToast('Sessão não foi criada. Tente novamente.', 'error');
+        btn.disabled = false;
+        btnLabel.textContent = 'Entrar na Plataforma';
+        btnIcon.textContent  = 'arrow_forward';
+        return;
       }
 
       showToast('Login realizado! Redirecionando…', 'success');
-
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1200);
+      window.location.href = 'dashboard.html';
     });
 
     // ─── Redirecionar se já estiver logado ────────────────────────────────────

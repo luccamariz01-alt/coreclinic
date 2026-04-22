@@ -30,10 +30,18 @@ export async function updateSession(request: NextRequest): Promise<SessionUpdate
     });
 
     const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      return { response, user: null };
+    }
+
+    const {
       data: { user }
     } = await supabase.auth.getUser();
 
-    return { response, user: user ? { id: user.id } : null };
+    return { response, user: user ? { id: user.id } : { id: session.user.id } };
   } catch {
     return { response, user: null };
   }

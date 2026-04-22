@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -21,10 +21,72 @@ type LoginFormProps = {
 
 export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [isResetPending, setIsResetPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const canSubmit = hasSupabaseEnv;
+
+  function normalizeAuthError(message: string) {
+    const lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.includes("invalid login credentials")) {
+      return "Email ou senha invalidos. Confira os dados e tente novamente.";
+    }
+
+    if (lowerMessage.includes("email not confirmed")) {
+      return "Email ainda nao confirmado. Verifique sua caixa de entrada.";
+    }
+
+    if (lowerMessage.includes("fetch") || lowerMessage.includes("network")) {
+      return "Falha ao conectar no Supabase. Verifique a internet e tente novamente.";
+    }
+
+    return message;
+  }
+
+  async function handleResetPassword() {
+    if (!canSubmit || isResetPending) {
+      return;
+    }
+
+    const form = formRef.current;
+    const email = form
+      ? String(new FormData(form).get("email") ?? "").trim()
+      : "";
+
+    if (!email) {
+      setErrorMessage("Informe seu email para recuperar o acesso.");
+      setSuccessMessage(null);
+      return;
+    }
+
+    setIsResetPending(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+      if (error) {
+        setErrorMessage(normalizeAuthError(error.message));
+        return;
+      }
+
+      setSuccessMessage("Email de recuperacao enviado. Confira sua caixa de entrada.");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? normalizeAuthError(error.message)
+          : "Falha ao enviar email de recuperacao.";
+      setErrorMessage(message);
+    } finally {
+      setIsResetPending(false);
+    }
+  }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,20 +106,28 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
 
     startTransition(async () => {
       setErrorMessage(null);
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      setSuccessMessage(null);
 
-      if (error) {
-        setErrorMessage(error.message);
-        return;
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          setErrorMessage(normalizeAuthError(error.message));
+          return;
+        }
+
+        router.replace("/dashboard");
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? normalizeAuthError(error.message)
+            : "Falha ao conectar ao Supabase.";
+        setErrorMessage(message);
       }
-
-      await supabase.auth.getSession();
-      router.replace("/dashboard");
-      router.refresh();
     });
   }
 
@@ -110,7 +180,11 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5 px-6 py-6 md:px-8 md:py-8">
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit}
+              className="space-y-5 px-6 py-6 md:px-8 md:py-8"
+            >
               <label className="block space-y-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">
                   E-mail
@@ -149,8 +223,13 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
                   </span>
                   Manter sessao ativa
                 </label>
-                <button type="button" className="font-semibold text-brand">
-                  Recuperar acesso
+                <button
+                  type="button"
+                  onClick={handleResetPassword}
+                  disabled={!canSubmit || isResetPending || isPending}
+                  className="font-semibold text-brand disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isResetPending ? "Enviando..." : "Recuperar acesso"}
                 </button>
               </div>
 
@@ -166,6 +245,12 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
               {errorMessage ? (
                 <div className="rounded-[1.35rem] border border-red-200 bg-red-50 px-4 py-4 text-sm leading-6 text-red-700">
                   {errorMessage}
+                </div>
+              ) : null}
+
+              {successMessage ? (
+                <div className="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm leading-6 text-emerald-700">
+                  {successMessage}
                 </div>
               ) : null}
 
