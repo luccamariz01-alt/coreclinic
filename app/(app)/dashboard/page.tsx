@@ -65,12 +65,12 @@ export default async function DashboardPage({
     const supabase = await createClient();
     const [dbMetrics, dbAppointments, dbWeeklyLoad] = await Promise.all([
       getDashboardMetrics(supabase, range, period),
-      getAppointmentsInRange(supabase, range),
+      getAppointmentsInRange(supabase, range, { limit: 8 }),
       getWeeklyLoad(supabase, range)
     ]);
 
     metrics = dbMetrics;
-    appointments = dbAppointments.length ? dbAppointments : todayAppointments;
+    appointments = dbAppointments;
     loadByWeekday = dbWeeklyLoad;
     canDeleteAppointments = dbAppointments.length > 0;
   }

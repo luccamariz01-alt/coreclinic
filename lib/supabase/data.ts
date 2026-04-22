@@ -3,12 +3,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Appointment, DashboardMetric, Patient } from "@/lib/types";
 
 type QueryClient = SupabaseClient<any, "public", any>;
-type DateRange = {
+export type DateRange = {
   start: Date;
   endExclusive: Date;
 };
 
 export type DashboardPeriod = "day" | "week" | "month" | "custom";
+export type AgendaAppointment = Appointment & {
+  startAt: string;
+};
 
 const statusLabel: Record<string, Appointment["status"]> = {
   agendado: "Agendado",
@@ -134,6 +137,117 @@ function getPercentDelta(current: number, previous: number) {
   return `${delta > 0 ? "+" : ""}${delta}%`;
 }
 
+type AppointmentRow = {
+  id: string;
+  paciente_nome: string | null;
+  paciente_id: string | null;
+  procedimento_nome: string | null;
+  procedimento_id: string | null;
+  inicio: string;
+  fim: string;
+  status: string | null;
+  valor_cobrado: number | null;
+};
+
+async function getProcedureLookup(supabase: QueryClient, procedureIds: string[]) {
+  if (!procedureIds.length) {
+    return new Map<string, { nome: string | null; valor: number | null }>();
+  }
+
+  const { data } = await supabase
+    .from("procedimentos")
+    .select("id,nome,valor")
+    .in("id", procedureIds);
+
+  const lookup = new Map<string, { nome: string | null; valor: number | null }>();
+  for (const row of data ?? []) {
+    lookup.set(row.id, {
+      nome: row.nome ?? null,
+      valor: typeof row.valor === "number" ? row.valor : Number(row.valor ?? 0)
+    });
+  }
+  return lookup;
+}
+
+async function getPatientNameLookup(supabase: QueryClient, patientIds: string[]) {
+  if (!patientIds.length) {
+    return new Map<string, string>();
+  }
+
+  const { data } = await supabase.from("pacientes").select("id,nome").in("id", patientIds);
+  const lookup = new Map<string, string>();
+  for (const row of data ?? []) {
+    if (row.nome) lookup.set(row.id, row.nome);
+  }
+  return lookup;
+}
+
+async function getEnrichedAppointments(
+  supabase: QueryClient,
+  rows: AppointmentRow[]
+): Promise<AgendaAppointment[]> {
+  if (!rows.length) {
+    return [];
+  }
+
+  const procedureIds = Array.from(
+    new Set(rows.map((row) => row.procedimento_id).filter((id): id is string => Boolean(id)))
+  );
+  const patientIds = Array.from(
+    new Set(rows.map((row) => row.paciente_id).filter((id): id is string => Boolean(id)))
+  );
+
+  const [procedureLookup, patientLookup] = await Promise.all([
+    getProcedureLookup(supabase, procedureIds),
+    getPatientNameLookup(supabase, patientIds)
+  ]);
+
+  return rows.map((row) => {
+    const start = new Date(row.inicio);
+    const end = new Date(row.fim);
+    const durationMin = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+    const procedureMeta = row.procedimento_id ? procedureLookup.get(row.procedimento_id) : undefined;
+    const resolvedProcedure = row.procedimento_nome ?? procedureMeta?.nome ?? "Procedimento";
+    const resolvedPatient = row.paciente_nome ?? (row.paciente_id ? patientLookup.get(row.paciente_id) : null);
+    const resolvedValue =
+      typeof row.valor_cobrado === "number"
+        ? row.valor_cobrado
+        : typeof procedureMeta?.valor === "number"
+          ? procedureMeta.valor
+          : 0;
+
+    return {
+      id: row.id,
+      patient: resolvedPatient ?? "Paciente",
+      procedure: resolvedProcedure,
+      time: formatTime(row.inicio),
+      duration: `${durationMin} min`,
+      room: "Sala principal",
+      status: statusLabel[row.status ?? "agendado"] ?? "Agendado",
+      price: formatMoney(Number(resolvedValue)),
+      startAt: row.inicio
+    };
+  });
+}
+
+export async function getAgendaAppointmentsInRange(
+  supabase: QueryClient,
+  range: DateRange
+): Promise<AgendaAppointment[]> {
+  const { data, error } = await supabase
+    .from("agendamentos")
+    .select("id,paciente_nome,paciente_id,procedimento_nome,procedimento_id,inicio,fim,status,valor_cobrado")
+    .gte("inicio", range.start.toISOString())
+    .lt("inicio", range.endExclusive.toISOString())
+    .order("inicio", { ascending: true });
+
+  if (error || !data) {
+    return [];
+  }
+
+  return getEnrichedAppointments(supabase, data as AppointmentRow[]);
+}
+
 export async function getDashboardMetrics(
   supabase: QueryClient,
   range: DateRange,
@@ -217,36 +331,30 @@ export async function getDashboardMetrics(
 
 export async function getAppointmentsInRange(
   supabase: QueryClient,
-  range: DateRange
+  range: DateRange,
+  options?: {
+    limit?: number;
+  }
 ): Promise<Appointment[]> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("agendamentos")
-    .select("id,paciente_nome,procedimento_nome,inicio,fim,status,valor_cobrado")
+    .select("id,paciente_nome,paciente_id,procedimento_nome,procedimento_id,inicio,fim,status,valor_cobrado")
     .gte("inicio", range.start.toISOString())
     .lt("inicio", range.endExclusive.toISOString())
-    .order("inicio", { ascending: true })
-    .limit(8);
+    .order("inicio", { ascending: true });
+
+  if (typeof options?.limit === "number" && options.limit > 0) {
+    query = query.limit(options.limit);
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) {
     return [];
   }
 
-  return data.map((row) => {
-    const start = new Date(row.inicio);
-    const end = new Date(row.fim);
-    const durationMin = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
-
-    return {
-      id: row.id,
-      patient: row.paciente_nome ?? "Paciente",
-      procedure: row.procedimento_nome ?? "Procedimento",
-      time: formatTime(row.inicio),
-      duration: `${durationMin} min`,
-      room: "Sala principal",
-      status: statusLabel[row.status] ?? "Agendado",
-      price: formatMoney(Number(row.valor_cobrado ?? 0))
-    };
-  });
+  const enriched = await getEnrichedAppointments(supabase, data as AppointmentRow[]);
+  return enriched.map(({ startAt: _startAt, ...appointment }) => appointment);
 }
 
 export async function getWeeklyLoad(
@@ -303,15 +411,77 @@ export async function getPatients(supabase: QueryClient): Promise<Patient[]> {
     return [];
   }
 
-  return data.map((row) => ({
-    id: row.id,
-    name: row.nome,
-    email: row.email ?? "-",
-    phone: row.telefone ?? "-",
-    lastVisit: row.created_at ? formatDateBR(row.created_at) : "-",
-    procedure: "Consultar agenda",
-    lifetimeValue: "N/D",
-    segment: "Em definicao",
-    notes: row.observacoes ?? "Sem observacoes."
-  }));
+  const patientIds = data.map((row) => row.id);
+  if (!patientIds.length) {
+    return [];
+  }
+  const { data: appointmentData } = await supabase
+    .from("agendamentos")
+    .select("paciente_id,procedimento_id,procedimento_nome,inicio,valor_cobrado,status")
+    .in("paciente_id", patientIds)
+    .order("inicio", { ascending: false });
+
+  const procedureIds = Array.from(
+    new Set(
+      (appointmentData ?? [])
+        .map((row) => row.procedimento_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  const procedureLookup = await getProcedureLookup(supabase, procedureIds);
+
+  const lastAppointmentByPatient = new Map<
+    string,
+    {
+      inicio: string;
+      procedimentoNome: string;
+    }
+  >();
+  const lifetimeByPatient = new Map<string, number>();
+
+  for (const appointment of appointmentData ?? []) {
+    if (!appointment.paciente_id) continue;
+
+    if (!lastAppointmentByPatient.has(appointment.paciente_id)) {
+      const procedureMeta = appointment.procedimento_id
+        ? procedureLookup.get(appointment.procedimento_id)
+        : undefined;
+      lastAppointmentByPatient.set(appointment.paciente_id, {
+        inicio: appointment.inicio,
+        procedimentoNome:
+          appointment.procedimento_nome ?? procedureMeta?.nome ?? "Sem procedimento"
+      });
+    }
+
+    if (appointment.status === "concluido") {
+      const prev = lifetimeByPatient.get(appointment.paciente_id) ?? 0;
+      lifetimeByPatient.set(
+        appointment.paciente_id,
+        prev + Number(appointment.valor_cobrado ?? 0)
+      );
+    }
+  }
+
+  return data.map((row) => {
+    const lastAppointment = lastAppointmentByPatient.get(row.id);
+    const total = lifetimeByPatient.get(row.id) ?? 0;
+    const segment =
+      total >= 5000 ? "Premium recorrente" : total >= 1500 ? "Alto potencial" : "Entrada ativa";
+
+    return {
+      id: row.id,
+      name: row.nome,
+      email: row.email ?? "-",
+      phone: row.telefone ?? "-",
+      lastVisit: lastAppointment?.inicio
+        ? formatDateBR(lastAppointment.inicio)
+        : row.created_at
+          ? formatDateBR(row.created_at)
+          : "-",
+      procedure: lastAppointment?.procedimentoNome ?? "Sem procedimento",
+      lifetimeValue: formatMoney(total),
+      segment,
+      notes: row.observacoes ?? "Sem observacoes."
+    };
+  });
 }

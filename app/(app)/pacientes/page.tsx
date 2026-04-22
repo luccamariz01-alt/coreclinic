@@ -20,8 +20,16 @@ export default async function PatientsPage() {
   if (hasSupabaseEnv) {
     const supabase = await createClient();
     const dbPatients = await getPatients(supabase);
-    currentPatients = dbPatients.length ? dbPatients : patients;
+    currentPatients = dbPatients;
   }
+
+  const totalPatients = currentPatients.length;
+  const premiumCount = currentPatients.filter(
+    (patient) => patient.segment === "Premium recorrente"
+  ).length;
+  const reengagementCount = currentPatients.filter(
+    (patient) => patient.segment === "Entrada ativa"
+  ).length;
 
   return (
     <div className="space-y-5">
@@ -37,15 +45,15 @@ export default async function PatientsPage() {
               </div>
 
               <div className="card-surface rounded-full px-5 py-3 text-sm text-muted-foreground">
-                148 pacientes ativos - 12 em janela de retorno
+                {totalPatients} pacientes listados - {reengagementCount} em reengajamento
               </div>
             </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
               {[
-                ["Novos no mes", "18"],
-                ["Premium recorrente", "34"],
-                ["Reengajamento", "12 contatos"]
+                ["Total listados", String(totalPatients)],
+                ["Premium recorrente", String(premiumCount)],
+                ["Reengajamento", `${reengagementCount} contatos`]
               ].map((item) => (
                 <div key={item[0]} className="card-surface rounded-[1rem] bg-muted p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand/60">

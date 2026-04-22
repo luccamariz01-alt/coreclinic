@@ -27,6 +27,10 @@ export function Topbar({ demoMode }: TopbarProps) {
     });
   }
 
+  function handleOpenAgenda() {
+    router.push("/agenda");
+  }
+
   return (
     <header className="shell-surface sticky top-3 z-30 rounded-shell border border-border px-4 py-4 shadow-soft md:px-6">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -57,7 +61,12 @@ export function Topbar({ demoMode }: TopbarProps) {
             />
           </label>
 
-          <button className="interactive-surface card-surface flex size-11 items-center justify-center rounded-full text-muted-foreground hover:text-brand">
+          <button
+            type="button"
+            onClick={handleOpenAgenda}
+            aria-label="Abrir agenda"
+            className="interactive-surface card-surface flex size-11 items-center justify-center rounded-full text-muted-foreground hover:text-brand"
+          >
             <Icon name="bell" />
           </button>
 
