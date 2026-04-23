@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -20,8 +20,9 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [isResetPending, setIsResetPending] = useState(false);
+  const [rememberSession, setRememberSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const router = useRouter();
@@ -88,10 +89,10 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
     }
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!canSubmit) {
+    if (!canSubmit || isPending) {
       return;
     }
 
@@ -104,31 +105,41 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
       return;
     }
 
-    startTransition(async () => {
-      setErrorMessage(null);
-      setSuccessMessage(null);
+    setIsPending(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
-      try {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signInWithPassword({
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
           email,
-          password
-        });
+          password,
+          rememberSession
+        })
+      });
 
-        if (error) {
-          setErrorMessage(normalizeAuthError(error.message));
-          return;
-        }
-
-        router.replace("/dashboard");
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? normalizeAuthError(error.message)
-            : "Falha ao conectar ao Supabase.";
-        setErrorMessage(message);
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        throw new Error(payload?.error || "Falha ao autenticar no Supabase.");
       }
-    });
+
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? normalizeAuthError(error.message)
+          : "Falha ao conectar ao Supabase.";
+      setErrorMessage(message);
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (
@@ -217,9 +228,17 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
               </label>
 
               <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <label className="flex items-center gap-3">
-                  <span className="flex size-5 items-center justify-center rounded-md border border-border bg-white text-brand">
-                    <Icon name="check" className="size-3" />
+                <label className="group flex cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="rememberSession"
+                    checked={rememberSession}
+                    onChange={(event) => setRememberSession(event.target.checked)}
+                    className="peer sr-only"
+                    aria-label="Manter sessao ativa"
+                  />
+                  <span className="flex size-5 items-center justify-center rounded-md border border-border bg-white text-brand transition-all duration-200 ease-out peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-4 peer-focus-visible:ring-[var(--focus-ring)] group-hover:border-brand/70">
+                    <Icon className="size-3 scale-90 opacity-0 transition-all duration-200 ease-out peer-checked:scale-100 peer-checked:opacity-100" name="check" />
                   </span>
                   Manter sessao ativa
                 </label>
@@ -236,10 +255,22 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
               <button
                 type="submit"
                 disabled={!canSubmit || isPending}
-                className="cta-primary interactive-surface flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                className="group cta-primary interactive-surface flex w-full items-center justify-center gap-2 rounded-full px-5 py-4 font-semibold disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isPending ? "Entrando..." : "Entrar no painel"}
-                <Icon name="arrowRight" className="size-4" />
+                {isPending ? (
+                  <>
+                    <span
+                      className="size-4 rounded-full border-2 border-white/45 border-t-white motion-safe:animate-spin"
+                      aria-hidden="true"
+                    />
+                    Entrando...
+                  </>
+                ) : (
+                  <>
+                    Entrar no painel
+                    <Icon name="arrowRight" className="size-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+                  </>
+                )}
               </button>
 
               {errorMessage ? (
@@ -253,27 +284,6 @@ export function LoginForm({ hasSupabaseEnv }: LoginFormProps) {
                   {successMessage}
                 </div>
               ) : null}
-
-              <div className="rounded-[1.35rem] bg-muted px-4 py-4 text-sm leading-6 text-muted-foreground">
-                {hasSupabaseEnv ? (
-                  <span>
-                    Conexao com Supabase detectada. Use um usuario valido do Auth para
-                    entrar no painel.
-                  </span>
-                ) : (
-                  <span>
-                    Modo demonstracao ativo. Configure{" "}
-                    <code className="rounded bg-white px-1.5 py-0.5 text-xs text-foreground">
-                      NEXT_PUBLIC_SUPABASE_URL
-                    </code>{" "}
-                    e{" "}
-                    <code className="rounded bg-white px-1.5 py-0.5 text-xs text-foreground">
-                      NEXT_PUBLIC_SUPABASE_ANON_KEY
-                    </code>{" "}
-                    para plugar o backend real.
-                  </span>
-                )}
-              </div>
 
               <div className="flex flex-wrap gap-3 pt-2">
                 <Link

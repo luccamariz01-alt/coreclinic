@@ -19,6 +19,11 @@ function hasSupabaseAuthCookie(request: NextRequest) {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // API routes (including auth endpoints) must not be redirected by page auth middleware.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   if (!hasSupabaseEnv) {
     return NextResponse.next();
   }
